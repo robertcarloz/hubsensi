@@ -1,0 +1,167 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Kelas - {{ super() }}{% endblock %}
+
+{% block sidebar_nav %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+        <i class="bi bi-speedometer2 me-2"></i>
+        Dashboard
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.teachers') }}">
+        <i class="bi bi-person-badge me-2"></i>
+        Guru
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.students') }}">
+        <i class="bi bi-people me-2"></i>
+        Siswa
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('admin.classrooms') }}">
+        <i class="bi bi-house-door me-2"></i>
+        Kelas
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.attendance') }}">
+        <i class="bi bi-clipboard-check me-2"></i>
+        Absensi
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.events') }}">
+        <i class="bi bi-calendar-event me-2"></i>
+        Kalender
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.settings') }}">
+        <i class="bi bi-gear me-2"></i>
+        Pengaturan
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('auth.logout') }}">
+        <i class="bi bi-box-arrow-right me-2"></i>
+        Logout
+    </a>
+</li>
+{% endblock %}
+
+{% block page_title %}Edit Kelas: {{ classroom.name }}{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('admin.classrooms') }}" class="btn btn-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i> Kembali
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Form Edit Kelas</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                        {% if form.name.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.grade_level.label(class="form-label") }}
+                        {{ form.grade_level(class="form-control" + (" is-invalid" if form.grade_level.errors else "")) }}
+                        {% if form.grade_level.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.grade_level.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Contoh: Kelas 7, Kelas 10, dll.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.homeroom_teacher_id.label(class="form-label") }}
+                        {{ form.homeroom_teacher_id(class="form-select" + (" is-invalid" if form.homeroom_teacher_id.errors else "")) }}
+                        {% if form.homeroom_teacher_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.homeroom_teacher_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Pilih guru yang akan menjadi wali kelas</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i> Simpan Perubahan
+                </button>
+                <a href="{{ url_for('admin.classrooms') }}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle me-1"></i> Batal
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Siswa di Kelas Ini</h5>
+    </div>
+    <div class="card-body">
+        {% if classroom.students %}
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>NIS</th>
+                            <th>Nama Lengkap</th>
+                            <th>Tanggal Bergabung</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in classroom.students %}
+                        <tr>
+                            <td>{{ student.nis }}</td>
+                            <td>{{ student.full_name }}</td>
+                            <td>{{ student.created_at.strftime('%d/%m/%Y') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-3">
+                <i class="bi bi-people text-muted fs-1 d-block mb-2"></i>
+                <p class="text-muted">Belum ada siswa di kelas ini</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

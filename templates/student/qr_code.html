@@ -1,0 +1,309 @@
+{% extends "layout.html" %}
+
+{% block title %}QR Code Saya - {{ super() }}{% endblock %}
+
+{% block sidebar_nav %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('student.dashboard') }}">
+        <i class="bi bi-speedometer2 me-2"></i>
+        Dashboard
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('student.attendance') }}">
+        <i class="bi bi-clipboard-check me-2"></i>
+        Absensi Saya
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('student.qr_code') }}">
+        <i class="bi bi-qr-code me-2"></i>
+        QR Code Saya
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('auth.profile') }}">
+        <i class="bi bi-person-circle me-2"></i>
+        Profil
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('auth.logout') }}">
+        <i class="bi bi-box-arrow-right me-2"></i>
+        Logout
+    </a>
+</li>
+{% endblock %}
+
+{% block page_title %}QR Code Saya{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <a href="{{ url_for('student.dashboard') }}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Kembali
+    </a>
+    {% if student.qr_code %}
+    <a href="{{ url_for('static', filename=student.qr_code.replace('static/', '')) }}" 
+       download="QRCode-{{ student.nis }}.png" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-download me-1"></i> Download
+    </a>
+    <button onclick="printQRCode()" class="btn btn-sm btn-primary">
+        <i class="bi bi-printer me-1"></i> Cetak
+    </button>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block page_content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header text-center">
+                <h5 class="card-title mb-0">QR Code Absensi</h5>
+            </div>
+            <div class="card-body">
+                {% if student.qr_code %}
+                <div class="text-center">
+                    <div class="qr-container bg-white p-3 rounded shadow-sm d-inline-block mb-4">
+                        <img src="{{ url_for('static', filename=student.qr_code.replace('static/', '')) }}" 
+                             alt="QR Code {{ student.full_name }}" class="img-fluid" style="max-width: 300px;">
+                    </div>
+                    
+                    <h4>{{ student.full_name }}</h4>
+                    <p class="text-muted">NIS: {{ student.nis }}</p>
+                    
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>Informasi Siswa</h6>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th>Nama</th>
+                                            <td>{{ student.full_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>NIS</th>
+                                            <td>{{ student.nis }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Kelas</th>
+                                            <td>{{ student.classroom.name if student.classroom else 'Belum ditentukan' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Sekolah</th>
+                                            <td>{{ school.name }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+                        <a href="{{ url_for('static', filename=student.qr_code.replace('static/', '')) }}" 
+                           download="QRCode-{{ student.nis }}.png" class="btn btn-primary">
+                            <i class="bi bi-download me-1"></i> Download QR Code
+                        </a>
+                        <button onclick="printQRCode()" class="btn btn-outline-primary">
+                            <i class="bi bi-printer me-1"></i> Cetak QR Code
+                        </button>
+                        <button onclick="shareQRCode()" class="btn btn-outline-secondary">
+                            <i class="bi bi-share me-1"></i> Bagikan
+                        </button>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Tunjukkan QR Code ini kepada guru untuk melakukan absensi. Jangan berikan QR Code kepada orang lain.
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-qr-code text-muted fs-1 d-block mb-3"></i>
+                    <h5>QR Code Tidak Tersedia</h5>
+                    <p class="text-muted">QR Code Anda belum dibuat. Silakan hubungi administrator sekolah.</p>
+                    <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left me-1"></i> Kembali ke Dashboard
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- QR Code Usage Instructions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Cara Menggunakan QR Code</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex mb-3">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 40px; height: 40px;">1</div>
+                            <div>
+                                <h6>Tunjukkan QR Code</h6>
+                                <p class="text-muted mb-0">Tunjukkan QR Code Anda kepada guru saat akan absen</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex mb-3">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 40px; height: 40px;">2</div>
+                            <div>
+                                <h6>Tunggu Pemindaian</h6>
+                                <p class="text-muted mb-0">Guru akan memindai QR Code menggunakan perangkat mereka</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex mb-3">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 40px; height: 40px;">3</div>
+                            <div>
+                                <h6>Konfirmasi</h6>
+                                <p class="text-muted mb-0">Tunggu konfirmasi bahwa absensi telah berhasil</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex mb-3">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 40px; height: 40px;">4</div>
+                            <div>
+                                <h6>Selesai</h6>
+                                <p class="text-muted mb-0">Absensi Anda telah tercatat di sistem</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning mt-3">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    Jaga kerahasiaan QR Code Anda. Jangan bagikan kepada siapapun.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function printQRCode() {
+        const printContent = `
+            <html>
+                <head>
+                    <title>QR Code - {{ student.full_name }}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+                        .qr-container { margin: 20px 0; }
+                        .student-info { margin-bottom: 20px; }
+                        table { margin: 0 auto; border-collapse: collapse; }
+                        th, td { padding: 5px 10px; text-align: left; border: 1px solid #ddd; }
+                        th { background-color: #f8f9fa; }
+                        .footer { margin-top: 30px; font-size: 12px; color: #6c757d; }
+                    </style>
+                </head>
+                <body>
+                    <h2>QR Code Absensi</h2>
+                    <div class="student-info">
+                        <table>
+                            <tr>
+                                <th>Nama</th>
+                                <td>{{ student.full_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>NIS</th>
+                                <td>{{ student.nis }}</td>
+                            </tr>
+                            <tr>
+                                <th>Kelas</th>
+                                <td>{{ student.classroom.name if student.classroom else 'Belum ditentukan' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Sekolah</th>
+                                <td>{{ school.name }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="qr-container">
+                        <img src="{{ url_for('static', filename=student.qr_code.replace('static/', '')) if student.qr_code }}" 
+                             alt="QR Code" style="max-width: 400px;">
+                    </div>
+                    <div class="footer">
+                        <p>Dicetak pada: {{ now.strftime('%d/%m/%Y %H:%M') }}</p>
+                        <p>Gunakan QR Code ini untuk absensi di sekolah. Jangan bagikan kepada siapapun.</p>
+                    </div>
+                </body>
+            </html>
+        `;
+        
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    }
+    
+    function shareQRCode() {
+        if (navigator.share) {
+            navigator.share({
+                title: 'QR Code Absensi - {{ student.full_name }}',
+                text: 'QR Code absensi untuk {{ student.full_name }} - {{ student.nis }}',
+                url: window.location.href
+            })
+            .then(() => console.log('Berhasil dibagikan'))
+            .catch((error) => console.log('Error sharing:', error));
+        } else {
+            alert('Browser tidak mendukung fitur berbagi. Silakan salin URL dari address bar.');
+        }
+    }
+    
+    // Auto-select QR code image on click for easier saving
+    document.addEventListener('DOMContentLoaded', function() {
+        const qrImage = document.querySelector('.qr-container img');
+        if (qrImage) {
+            qrImage.addEventListener('click', function() {
+                this.classList.toggle('qr-selected');
+            });
+        }
+    });
+</script>
+
+<style>
+    .qr-container img {
+        transition: transform 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .qr-container img.qr-selected {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .qr-container {
+        position: relative;
+    }
+    
+    .qr-container::after {
+        content: 'Klik untuk memperbesar';
+        position: absolute;
+        bottom: 10px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 12px;
+        color: #6c757d;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .qr-container:hover::after {
+        opacity: 1;
+    }
+</style>
+{% endblock %}

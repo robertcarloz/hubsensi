@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Pengaturan Sekolah - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Pengaturan Sekolah</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Pengaturan</li>
+    </ol>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-school me-1"></i>
+                    Informasi Sekolah
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.settings') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="name" class="form-label">Nama Sekolah</label>
+                                    {{ form.name(class="form-control", placeholder="Nama sekolah") }}
+                                    {% for error in form.name.errors %}
+                                        <span class="text-danger">{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="email" class="form-label">Email Sekolah</label>
+                                    {{ form.email(class="form-control", placeholder="Email sekolah") }}
+                                    {% for error in form.email.errors %}
+                                        <span class="text-danger">{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-group">
+                                <label for="address" class="form-label">Alamat Sekolah</label>
+                                {{ form.address(class="form-control", placeholder="Alamat lengkap sekolah", rows="3") }}
+                                {% for error in form.address.errors %}
+                                    <span class="text-danger">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="phone" class="form-label">Telepon</label>
+                                    {{ form.phone(class="form-control", placeholder="Nomor telepon sekolah") }}
+                                    {% for error in form.phone.errors %}
+                                        <span class="text-danger">{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="website" class="form-label">Website</label>
+                                    {{ form.website(class="form-control", placeholder="Website sekolah") }}
+                                    {% for error in form.website.errors %}
+                                        <span class="text-danger">{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Simpan Perubahan
+                            </button>
+                            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Batal</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Informasi Sistem
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>ID Sekolah:</strong> {{ school.id }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Tanggal Registrasi:</strong> {{ school.created_at.strftime('%d %B %Y') }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Jumlah Guru:</strong> {{ teacher_count }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Jumlah Siswa:</strong> {{ student_count }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Jumlah Kelas:</strong> {{ classroom_count }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-cog me-1"></i>
+                    Opsi Lainnya
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.generate_qr') }}" class="btn btn-outline-primary mb-2">
+                            <i class="fas fa-qrcode me-1"></i> Kelola QR Code
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

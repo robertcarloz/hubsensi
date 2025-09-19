@@ -1,0 +1,315 @@
+{% extends "layout.html" %}
+{% from "macros/form_macros.html" import render_field, render_select %}
+
+{% block title %}Edit Sekolah - {{ super() }}{% endblock %}
+
+{% block sidebar_nav %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('superadmin.dashboard') }}">
+        <i class="bi bi-speedometer2 me-2"></i>
+        Dashboard
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('superadmin.schools') }}">
+        <i class="bi bi-building me-2"></i>
+        Sekolah
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="#">
+        <i class="bi bi-pencil me-2"></i>
+        Edit Sekolah
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('auth.logout') }}">
+        <i class="bi bi-box-arrow-right me-2"></i>
+        Logout
+    </a>
+</li>
+{% endblock %}
+
+{% block page_title %}Edit Sekolah: {{ school.name }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <a href="{{ url_for('superadmin.schools') }}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Kembali
+    </a>
+    <button type="button" class="btn btn-sm btn-{{ 'success' if not school.is_active else 'danger' }}" 
+        onclick="toggleSchoolStatus({{ school.id }}, {{ 'true' if not school.is_active else 'false' }})">
+    <i class="bi bi-{{ 'check-circle' if not school.is_active else 'x-circle' }} me-1"></i>
+    {{ 'Aktifkan' if not school.is_active else 'Nonaktifkan' }}
+</button>
+
+</div>
+{% endblock %}
+
+{% block page_content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informasi Sekolah</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('superadmin.edit_school', school_id=school.id) }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ render_field(form.name) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.code) }}
+                        </div>
+                    </div>
+                    
+                    {{ render_field(form.address) }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ render_field(form.phone) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.email) }}
+                        </div>
+                    </div>
+                    
+                    {{ render_field(form.website) }}
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i> Simpan Perubahan
+                        </button>
+                        <a href="{{ url_for('superadmin.schools') }}" class="btn btn-secondary ms-2">
+                            <i class="bi bi-x-circle me-1"></i> Batal
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informasi Admin</h5>
+            </div>
+            <div class="card-body">
+                {% set admin = school.users | selectattr("role", "equalto", UserRole.ADMIN) | list | first %}
+                {% if admin %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Username</label>
+                    <p class="mb-0">{{ admin.username }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Email</label>
+                    <p class="mb-0">{{ admin.email }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Login Terakhir</label>
+                    <p class="mb-0">{{ admin.last_login.strftime('%d/%m/%Y %H:%M') if admin.last_login else 'Belum pernah login' }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Status</label>
+                    <p class="mb-0">
+                        <span class="badge bg-{{ 'success' if admin.is_active else 'secondary' }}">
+                            {{ 'Aktif' if admin.is_active else 'Nonaktif' }}
+                        </span>
+                    </p>
+                </div>
+                
+                <div class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">
+                        <i class="bi bi-key me-1"></i> Reset Password
+                    </button>
+                </div>
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="bi bi-person-x text-muted fs-1 d-block mb-2"></i>
+                    <p class="text-muted">Belum ada admin untuk sekolah ini</p>
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addAdminModal">
+                        <i class="bi bi-plus-circle me-1"></i> Tambah Admin
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Statistik Sekolah</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Tanggal Dibuat</label>
+                    <p class="mb-0">{{ school.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Terakhir Diupdate</label>
+                    <p class="mb-0">{{ school.updated_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Status</label>
+                    <p class="mb-0">
+                        <span class="badge bg-{{ 'success' if school.is_active else 'secondary' }}">
+                            {{ 'Aktif' if school.is_active else 'Nonaktif' }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if admin %}
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resetPasswordModalLabel">Reset Password Admin</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin mereset password untuk admin <strong>{{ admin.username }}</strong>?</p>
+                <p>Password baru akan dikirimkan ke email <strong>{{ admin.email }}</strong>.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" onclick="resetAdminPassword({{ admin.id }})">
+                    <i class="bi bi-key me-1"></i> Reset Password
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Add Admin Modal -->
+<div class="modal fade" id="addAdminModal" tabindex="-1" aria-labelledby="addAdminModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAdminModalLabel">Tambah Admin Sekolah</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addAdminForm" method="POST" action="{{ url_for('superadmin.add_admin', school_id=school.id) }}">
+                <div class="modal-body">
+                    {{ admin_form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Konfirmasi Password</label>
+                        <input type="password" class="form-control" name="confirm_password" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Tambah Admin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle school status
+    function toggleSchoolStatus(schoolId, newStatus) {
+        if (confirm(newStatus ? 'Aktifkan sekolah ini?' : 'Nonaktifkan sekolah ini?')) {
+            fetch(`/superadmin/schools/${schoolId}/toggle-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ is_active: newStatus })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Gagal mengubah status sekolah: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat mengubah status sekolah');
+            });
+        }
+    }
+    
+    // Reset admin password
+    function resetAdminPassword(adminId) {
+        fetch(`/superadmin/admin/${adminId}/reset-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Password berhasil direset dan dikirim ke email admin');
+                $('#resetPasswordModal').modal('hide');
+            } else {
+                alert('Gagal mereset password: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat mereset password');
+        });
+    }
+    
+    // Add admin form submission
+    document.getElementById('addAdminForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Admin berhasil ditambahkan');
+                location.reload();
+            } else {
+                alert('Gagal menambahkan admin: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat menambahkan admin');
+        });
+    });
+</script>
+{% endblock %}

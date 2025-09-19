@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Tambah' if not teacher else 'Edit' }} Guru - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>{{ 'Tambah' if not teacher else 'Edit' }} Guru</h3>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+            {{ form.full_name.label(class="form-label") }}
+            {{ form.full_name(class="form-control", placeholder="Masukkan nama lengkap guru") }}
+            {% if form.full_name.errors %}
+                <div class="text-danger mt-1">
+                    {% for error in form.full_name.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            {{ form.nip.label(class="form-label") }}
+            {{ form.nip(class="form-control", placeholder="Masukkan NIP guru") }}
+            {% if form.nip.errors %}
+                <div class="text-danger mt-1">
+                    {% for error in form.nip.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control", placeholder="Masukkan email guru") }}
+            {% if form.email.errors %}
+                <div class="text-danger mt-1">
+                    {% for error in form.email.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3 form-check">
+            {{ form.is_homeroom(class="form-check-input") }}
+            {{ form.is_homeroom.label(class="form-check-label") }}
+        </div>
+
+        <button type="submit" class="btn btn-success">
+            {{ 'Tambah' if not teacher else 'Simpan Perubahan' }}
+        </button>
+        <a href="{{ url_for('admin.teachers') }}" class="btn btn-secondary">Batal</a>
+    </form>
+</div>
+{% endblock %}

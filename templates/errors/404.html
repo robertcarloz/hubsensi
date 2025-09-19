@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Halaman Tidak Ditemukan - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 text-center">
+            <!-- Error Icon -->
+            <div class="error-icon mb-4">
+                <i class="bi bi-search text-info" style="font-size: 5rem;"></i>
+            </div>
+            
+            <!-- Error Title -->
+            <h1 class="display-4 fw-bold text-info mb-3">404</h1>
+            <h2 class="h3 mb-4">Halaman Tidak Ditemukan</h2>
+            
+            <!-- Error Message -->
+            <div class="error-message mb-5">
+                <p class="lead text-muted">
+                    Maaf, halaman yang Anda cari tidak ditemukan.
+                </p>
+                <p class="text-muted">
+                    URL mungkin telah diubah, dihapus, atau Anda mungkin salah mengetik alamat.
+                </p>
+            </div>
+            
+            <!-- Search Form -->
+            <div class="row justify-content-center mb-5">
+                <div class="col-md-8">
+                    <form action="{{ url_for('index') }}" method="get" class="d-flex">
+                        <input type="text" class="form-control me-2" placeholder="Cari sesuatu...">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-md-2">
+                    <i class="bi bi-house me-2"></i>Kembali ke Beranda
+                </a>
+                
+                <a href="javascript:history.back()" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-arrow-left me-2"></i>Kembali
+                </a>
+            </div>
+            
+            <!-- Additional Help -->
+            <div class="mt-5 pt-4 border-top">
+                <p class="small text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Error 404: Not Found - Resource yang diminta tidak ditemukan di server.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-icon {
+        animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-20px); }
+        60% { transform: translateY(-10px); }
+    }
+</style>
+{% endblock %}

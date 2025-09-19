@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Tambah Siswa - {{ super() }}{% endblock %}
+
+{% block content %}
+<h3>Tambah Siswa</h3>
+<form method="POST" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+    <label for="email">Email</label>
+    {{ form.email(class="form-control", placeholder="Email siswa (opsional)") }}
+    {% for error in form.email.errors %}
+        <span class="text-danger">{{ error }}</span>
+    {% endfor %}
+    </div>
+    <div class="mb-3">
+        {{ form.nis.label(class="form-label") }}
+        {{ form.nis(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.nisn.label(class="form-label") }}
+        {{ form.nisn(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.full_name.label(class="form-label") }}
+        {{ form.full_name(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.classroom_id.label(class="form-label") }}
+        {{ form.classroom_id(class="form-select") }}
+    </div>
+    <button type="submit" class="btn btn-success">Simpan</button>
+    <a href="{{ url_for('admin.students') }}" class="btn btn-secondary">Batal</a>
+</form>
+{% endblock %}

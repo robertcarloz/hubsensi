@@ -1,0 +1,57 @@
+# =====================
+# Python
+# =====================
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+env/
+venv/
+ENV/
+*.sqlite3
+
+# =====================
+# Virtualenv
+# =====================
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# =====================
+# VSCode
+# =====================
+.vscode/
+.history/
+
+# =====================
+# OS Files
+# =====================
+.DS_Store
+Thumbs.db
+
+# =====================
+# Logs & Dumps
+# =====================
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.tmp
+*.swp
+*.bak
+
+# =====================
+# Config / Secrets
+# =====================
+config.py
+*.env
+.env.*
+secrets.json

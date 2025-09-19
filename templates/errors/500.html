@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Kesalahan Server - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8 text-center">
+            <!-- Error Icon -->
+            <div class="error-icon mb-4">
+                <i class="bi bi-exclamation-triangle text-warning" style="font-size: 5rem;"></i>
+            </div>
+            
+            <!-- Error Title -->
+            <h1 class="display-4 fw-bold text-warning mb-3">500</h1>
+            <h2 class="h3 mb-4">Kesalahan Server</h2>
+            
+            <!-- Error Message -->
+            <div class="error-message mb-5">
+                <p class="lead text-muted">
+                    Maaf, terjadi kesalahan internal server. Tim kami telah diberitahu dan sedang memperbaiki masalah ini.
+                </p>
+                <p class="text-muted">
+                    Silakan coba lagi dalam beberapa saat. Jika masalah berlanjut, hubungi administrator sistem.
+                </p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-5">
+                <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-md-2">
+                    <i class="bi bi-house me-2"></i>Kembali ke Beranda
+                </a>
+                
+                <button onclick="window.location.reload()" class="btn btn-outline-primary btn-lg me-md-2">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Coba Lagi
+                </button>
+                
+                <a href="javascript:history.back()" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-arrow-left me-2"></i>Kembali
+                </a>
+            </div>
+            
+            <!-- Technical Details (only shown in development) -->
+            {% if config.DEBUG and error %}
+            <div class="card border-danger mt-5 text-start">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Detail Teknis (Hanya Development)</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-danger">{{ error.name }}</h6>
+                    <p class="text-muted">{{ error.description }}</p>
+                    
+                    {% if error.code %}
+                    <p><strong>Error Code:</strong> {{ error.code }}</p>
+                    {% endif %}
+                    
+                    {% if error.__traceback__ %}
+                    <div class="mt-3">
+                        <h6>Traceback:</h6>
+                        <pre class="bg-light p-3 small overflow-auto" style="max-height: 200px;">
+{{ error.__traceback__ }}
+                        </pre>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Additional Help -->
+            <div class="mt-5 pt-4 border-top">
+                <p class="small text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Error 500: Internal Server Error - Terjadi kesalahan tak terduga pada server.
+                </p>
+                
+                <div class="mt-3">
+                    <p class="small">
+                        <strong>Hubungi Support:</strong><br>
+                        Email: support@hubsensi.com<br>
+                        Telepon: (021) 1234-5678
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-icon {
+        animation: shake 2s infinite;
+    }
+    
+    @keyframes shake {
+        0% { transform: rotate(0deg); }
+        2% { transform: rotate(-5deg); }
+        4% { transform: rotate(5deg); }
+        6% { transform: rotate(-5deg); }
+        8% { transform: rotate(5deg); }
+        10% { transform: rotate(0deg); }
+        100% { transform: rotate(0deg); }
+    }
+</style>
+{% endblock %}

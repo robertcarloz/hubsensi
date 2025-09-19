@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Akses Ditolak - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 text-center">
+            <!-- Error Icon -->
+            <div class="error-icon mb-4">
+                <i class="bi bi-shield-exclamation text-danger" style="font-size: 5rem;"></i>
+            </div>
+            
+            <!-- Error Title -->
+            <h1 class="display-4 fw-bold text-danger mb-3">403</h1>
+            <h2 class="h3 mb-4">Akses Ditolak</h2>
+            
+            <!-- Error Message -->
+            <div class="error-message mb-5">
+                <p class="lead text-muted">
+                    Maaf, Anda tidak memiliki izin untuk mengakses halaman ini.
+                </p>
+                <p class="text-muted">
+                    Hubungi administrator sistem jika Anda merasa ini adalah kesalahan.
+                </p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-md-2">
+                    <i class="bi bi-house me-2"></i>Kembali ke Beranda
+                </a>
+                
+                {% if current_user.is_authenticated %}
+                <a href="
+                    {% if current_user.role.value == 'superadmin' %}
+                        {{ url_for('superadmin.dashboard') }}
+                    {% elif current_user.role.value == 'admin' %}
+                        {{ url_for('admin.dashboard') }}
+                    {% elif current_user.role.value == 'teacher' %}
+                        {{ url_for('teacher.dashboard') }}
+                    {% elif current_user.role.value == 'student' %}
+                        {{ url_for('student.dashboard') }}
+                    {% else %}
+                        {{ url_for('index') }}
+                    {% endif %}" 
+                   class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-speedometer2 me-2"></i>Kembali ke Dashboard
+                </a>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                </a>
+                {% endif %}
+            </div>
+            
+            <!-- Additional Help -->
+            <div class="mt-5 pt-4 border-top">
+                <p class="small text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Error 403: Forbidden - Anda tidak memiliki izin untuk mengakses resource ini.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-icon {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+</style>
+{% endblock %}

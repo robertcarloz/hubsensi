@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Layanan Tidak Tersedia - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 text-center">
+            <!-- Error Icon -->
+            <div class="error-icon mb-4">
+                <i class="bi bi-gear text-secondary" style="font-size: 5rem;"></i>
+            </div>
+            
+            <!-- Error Title -->
+            <h1 class="display-4 fw-bold text-secondary mb-3">503</h1>
+            <h2 class="h3 mb-4">Layanan Tidak Tersedia</h2>
+            
+            <!-- Error Message -->
+            <div class="error-message mb-5">
+                <p class="lead text-muted">
+                    Maaf, layanan sedang dalam pemeliharaan.
+                </p>
+                <p class="text-muted">
+                    Kami sedang melakukan perbaikan dan peningkatan sistem. Silakan coba lagi dalam beberapa saat.
+                </p>
+            </div>
+            
+            <!-- Maintenance Info -->
+            <div class="card border-info mb-5">
+                <div class="card-header bg-info text-white">
+                    <i class="bi bi-tools me-2"></i>Informasi Pemeliharaan
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Perkiraan Selesai:</strong> 2 Jam</p>
+                    <p class="mb-0"><strong>Status:</strong> Dalam Proses</p>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <button onclick="window.location.reload()" class="btn btn-primary btn-lg me-md-2">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Coba Lagi
+                </button>
+                
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-house me-2"></i>Kembali ke Beranda
+                </a>
+            </div>
+            
+            <!-- Additional Help -->
+            <div class="mt-5 pt-4 border-top">
+                <p class="small text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Error 503: Service Unavailable - Server sedang dalam pemeliharaan.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-icon {
+        animation: pulse 2s infinite;
+    }
+</style>
+{% endblock %}

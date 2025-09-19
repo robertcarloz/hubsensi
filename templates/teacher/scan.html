@@ -1,0 +1,386 @@
+{% extends "layout.html" %}
+
+{% block title %}Scan QR Code - {{ super() }}{% endblock %}
+
+{% block sidebar_nav %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('teacher.dashboard') }}">
+        <i class="bi bi-speedometer2 me-2"></i>
+        Dashboard
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('teacher.attendance') }}">
+        <i class="bi bi-clipboard-check me-2"></i>
+        Absensi Siswa
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('teacher.scan') }}">
+        <i class="bi bi-qr-code-scan me-2"></i>
+        Scan QR
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('teacher.my_attendance') }}">
+        <i class="bi bi-person-check me-2"></i>
+        Absensi Saya
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('auth.profile') }}">
+        <i class="bi bi-person-circle me-2"></i>
+        Profil
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('auth.logout') }}">
+        <i class="bi bi-box-arrow-right me-2"></i>
+        Logout
+    </a>
+</li>
+{% endblock %}
+
+{% block page_title %}Scan QR Code Siswa{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('teacher.attendance') }}" class="btn btn-sm btn-outline-primary">
+    <i class="bi bi-clipboard-check me-1"></i> Input Manual
+</a>
+{% endblock %}
+
+{% block page_content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Pemindai QR Code</h5>
+            </div>
+            <div class="card-body text-center">
+                <div id="scanner-container" class="mb-3">
+                    <video id="qr-video" class="w-100 rounded" style="max-height: 300px;"></video>
+                </div>
+                
+                <div class="mb-3">
+                    <button id="toggle-scanner" class="btn btn-primary">
+                        <i class="bi bi-play-fill me-1"></i> Mulai Scan
+                    </button>
+                    <button id="switch-camera" class="btn btn-outline-secondary ms-2" style="display: none;">
+                        <i class="bi bi-camera-video me-1"></i> Ganti Kamera
+                    </button>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Arahkan kamera ke QR Code siswa untuk melakukan absensi otomatis.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Hasil Scan</h5>
+            </div>
+            <div class="card-body">
+                <div id="qr-result" class="text-center">
+                    <i class="bi bi-qr-code text-muted fs-1 d-block mb-3"></i>
+                    <p class="text-muted">Hasil scan akan muncul di sini</p>
+                </div>
+                
+                <div class="mt-4">
+                    <h6>Panduan Penggunaan:</h6>
+                    <ol class="small">
+                        <li>Klik "Mulai Scan" untuk mengaktifkan kamera</li>
+                        <li>Arahkan kamera ke QR Code siswa</li>
+                        <li>Tunggu hingga QR Code terdeteksi secara otomatis</li>
+                        <li>Absensi akan tercatat secara otomatis</li>
+                    </ol>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Pastikan siswa menunjukkan QR Code yang valid dan terdaftar di sistem.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Manual Input Modal -->
+<div class="modal fade" id="manualInputModal" tabindex="-1" aria-labelledby="manualInputModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="manualInputModalLabel">Input Manual QR Code</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="manualInputForm">
+                    <div class="mb-3">
+                        <label for="manualQrData" class="form-label">Data QR Code</label>
+                        <input type="text" class="form-control" id="manualQrData" placeholder="Masukkan data QR code">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" onclick="processManualInput()">Proses</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/minified/qr-scanner.min.js"></script>
+<script>
+    let qrScanner = null;
+    let currentCamera = 0;
+    let cameras = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize QR Scanner
+        const videoElement = document.getElementById('qr-video');
+        const toggleButton = document.getElementById('toggle-scanner');
+        const switchCameraButton = document.getElementById('switch-camera');
+        const resultContainer = document.getElementById('qr-result');
+        
+        // Check if browser supports camera access
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            resultContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-camera-video-off me-1"></i>
+                    Browser tidak mendukung akses kamera. Silakan gunakan browser modern seperti Chrome atau Firefox.
+                </div>
+                <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#manualInputModal">
+                    <i class="bi bi-keyboard me-1"></i> Input Manual
+                </button>
+            `;
+            toggleButton.disabled = true;
+            return;
+        }
+        
+        // Get available cameras
+        QrScanner.listCameras().then(availableCameras => {
+            cameras = availableCameras;
+            if (cameras.length > 1) {
+                switchCameraButton.style.display = 'inline-block';
+            }
+        });
+        
+        // Toggle scanner
+        toggleButton.addEventListener('click', function() {
+            if (qrScanner) {
+                // Stop scanner
+                qrScanner.stop();
+                qrScanner = null;
+                toggleButton.innerHTML = '<i class="bi bi-play-fill me-1"></i> Mulai Scan';
+                videoElement.style.display = 'none';
+            } else {
+                // Start scanner
+                startScanner();
+            }
+        });
+        
+        // Switch camera
+        switchCameraButton.addEventListener('click', function() {
+            if (cameras.length > 1) {
+                currentCamera = (currentCamera + 1) % cameras.length;
+                if (qrScanner) {
+                    qrScanner.stop();
+                    startScanner();
+                }
+            }
+        });
+        
+        function startScanner() {
+            qrScanner = new QrScanner(
+                videoElement,
+                result => {
+                    processQrResult(result);
+                },
+                {
+                    preferredCamera: cameras[currentCamera]?.id || 'environment',
+                    highlightScanRegion: true,
+                    highlightCodeOutline: true,
+                }
+            );
+            
+            qrScanner.start().then(() => {
+                toggleButton.innerHTML = '<i class="bi bi-stop-fill me-1"></i> Stop Scan';
+                videoElement.style.display = 'block';
+            }).catch(err => {
+                console.error('Error starting scanner:', err);
+                resultContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Gagal mengakses kamera: ${err.message}
+                    </div>
+                    <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#manualInputModal">
+                        <i class="bi bi-keyboard me-1"></i> Input Manual
+                    </button>
+                `;
+            });
+        }
+        
+        function processQrResult(result) {
+            // Show loading state
+            resultContainer.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Memproses...</span>
+                    </div>
+                    <p>Memproses QR Code...</p>
+                </div>
+            `;
+            
+            // Send to server
+            fetch('{{ url_for("teacher.process_scan") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'qr_data': result.data,
+                    'csrf_token': '{{ csrf_token() }}'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultContainer.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle-fill me-1"></i>
+                            ${data.message}
+                            ${data.student_name ? `<br><strong>${data.student_name}</strong>` : ''}
+                            ${data.status ? `<br>Status: ${data.status}` : ''}
+                        </div>
+                    `;
+                } else {
+                    resultContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            ${data.message}
+                        </div>
+                    `;
+                }
+                
+                // Restart scanner after 3 seconds
+                setTimeout(() => {
+                    if (qrScanner) {
+                        qrScanner.start();
+                    }
+                    resultContainer.innerHTML = `
+                        <i class="bi bi-qr-code text-muted fs-1 d-block mb-3"></i>
+                        <p class="text-muted">Hasil scan akan muncul di sini</p>
+                    `;
+                }, 3000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Terjadi kesalahan: ${error.message}
+                    </div>
+                `;
+                
+                // Restart scanner after 3 seconds
+                setTimeout(() => {
+                    if (qrScanner) {
+                        qrScanner.start();
+                    }
+                    resultContainer.innerHTML = `
+                        <i class="bi bi-qr-code text-muted fs-1 d-block mb-3"></i>
+                        <p class="text-muted">Hasil scan akan muncul di sini</p>
+                    `;
+                }, 3000);
+            });
+        }
+    });
+    
+    // Manual input processing
+    function processManualInput() {
+        const qrData = document.getElementById('manualQrData').value;
+        if (!qrData) {
+            alert('Masukkan data QR code terlebih dahulu');
+            return;
+        }
+        
+        $('#manualInputModal').modal('hide');
+        
+        // Show loading state
+        const resultContainer = document.getElementById('qr-result');
+        resultContainer.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Memproses...</span>
+                </div>
+                <p>Memproses QR Code...</p>
+            </div>
+        `;
+        
+        // Send to server
+        fetch('{{ url_for("teacher.process_scan") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                'qr_data': qrData,
+                'csrf_token': '{{ csrf_token() }}'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                resultContainer.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle-fill me-1"></i>
+                        ${data.message}
+                        ${data.student_name ? `<br><strong>${data.student_name}</strong>` : ''}
+                        ${data.status ? `<br>Status: ${data.status}` : ''}
+                    </div>
+                `;
+            } else {
+                resultContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        ${data.message}
+                    </div>
+                `;
+            }
+            
+            // Clear manual input
+            document.getElementById('manualQrData').value = '';
+            
+            // Reset after 3 seconds
+            setTimeout(() => {
+                resultContainer.innerHTML = `
+                    <i class="bi bi-qr-code text-muted fs-1 d-block mb-3"></i>
+                    <p class="text-muted">Hasil scan akan muncul di sini</p>
+                `;
+            }, 3000);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            resultContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    Terjadi kesalahan: ${error.message}
+                </div>
+            `;
+            
+            // Reset after 3 seconds
+            setTimeout(() => {
+                resultContainer.innerHTML = `
+                    <i class="bi bi-qr-code text-muted fs-1 d-block mb-3"></i>
+                    <p class="text-muted">Hasil scan akan muncul di sini</p>
+                `;
+            }, 3000);
+        });
+    }
+</script>
+{% endblock %}

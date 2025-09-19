@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Tambah Kelas - {{ super() }}{% endblock %}
+
+{% block page_title %}Tambah Kelas{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.grade_level.label(class="form-label") }}
+                {{ form.grade_level(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.homeroom_teacher_id.label(class="form-label") }}
+                {{ form.homeroom_teacher_id(class="form-select") }}
+            </div>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+            <a href="{{ url_for('admin.classrooms') }}" class="btn btn-secondary">Batal</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

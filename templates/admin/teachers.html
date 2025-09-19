@@ -1,0 +1,243 @@
+{% extends "layout.html" %}
+
+{% block title %}Kelola Guru - {{ super() }}{% endblock %}
+
+{% block sidebar_nav %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+        <i class="bi bi-speedometer2 me-2"></i>
+        Dashboard
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('admin.teachers') }}">
+        <i class="bi bi-person-badge me-2"></i>
+        Guru
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.students') }}">
+        <i class="bi bi-people me-2"></i>
+        Siswa
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.classrooms') }}">
+        <i class="bi bi-house-door me-2"></i>
+        Kelas
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.attendance') }}">
+        <i class="bi bi-clipboard-check me-2"></i>
+        Absensi
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.events') }}">
+        <i class="bi bi-calendar-event me-2"></i>
+        Kalender
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.settings') }}">
+        <i class="bi bi-gear me-2"></i>
+        Pengaturan
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('auth.logout') }}">
+        <i class="bi bi-box-arrow-right me-2"></i>
+        Logout
+    </a>
+</li>
+{% endblock %}
+
+{% block page_title %}Kelola Guru{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('admin.add_teacher') }}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-circle me-1"></i> Tambah Guru
+</a>
+{% endblock %}
+
+{% block page_content %}
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">Daftar Guru</h5>
+            
+            <div class="d-flex">
+                <input type="text" class="form-control form-control-sm me-2" placeholder="Cari guru..." id="searchInput">
+                <select class="form-select form-select-sm" id="statusFilter">
+                    <option value="">Semua Status</option>
+                    <option value="homeroom">Wali Kelas</option>
+                    <option value="regular">Guru Biasa</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover" id="teachersTable">
+                <thead>
+                    <tr>
+                        <th>NIP</th>
+                        <th>Nama Lengkap</th>
+                        <th>Status</th>
+                        <th>Kelas Wali</th>
+                        <th>Tanggal Bergabung</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for teacher in teachers %}
+                    <tr>
+                        <td>{{ teacher.nip or '-' }}</td>
+                        <td>{{ teacher.full_name }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if teacher.is_homeroom else 'primary' }}">
+                                {{ 'Wali Kelas' if teacher.is_homeroom else 'Guru' }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if teacher.is_homeroom and teacher.homeroom_class %}
+                                {{ teacher.homeroom_class.name }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ teacher.created_at.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('admin.edit_teacher', teacher_id=teacher.id) }}" 
+                                   class="btn btn-outline-primary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" 
+                                        title="Hapus" onclick="confirmDelete({{ teacher.id }}, '{{ teacher.full_name }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <i class="bi bi-person-badge text-muted fs-1 d-block mb-2"></i>
+                            <p class="text-muted">Belum ada data guru</p>
+                            <a href="{{ url_for('admin.add_teacher') }}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-1"></i> Tambah Guru Pertama
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if teachers %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.teachers', page=pagination.prev_num) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in pagination.iter_pages() %}
+                    {% if page_num %}
+                        <li class="page-item {{ 'active' if page_num == pagination.page }}">
+                            <a class="page-link" href="{{ url_for('admin.teachers', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.teachers', page=pagination.next_num) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus guru <strong id="deleteTeacherName"></strong>?</p>
+                <p class="text-danger">Perhatian: Tindakan ini tidak dapat dibatalkan!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <form id="deleteForm" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">Hapus</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Teacher table filtering
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const table = document.getElementById('teachersTable');
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        
+        function filterTable() {
+            const searchText = searchInput.value.toLowerCase();
+            const statusValue = statusFilter.value;
+            
+            for (let i = 0; i < rows.length; i++) {
+                const name = rows[i].cells[1].textContent.toLowerCase();
+                const nip = rows[i].cells[0].textContent.toLowerCase();
+                const status = rows[i].cells[2].textContent.toLowerCase();
+                
+                const matchesSearch = name.includes(searchText) || nip.includes(searchText);
+                let matchesStatus = true;
+                
+                if (statusValue === 'homeroom') {
+                    matchesStatus = status.includes('wali');
+                } else if (statusValue === 'regular') {
+                    matchesStatus = !status.includes('wali');
+                }
+                
+                rows[i].style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+            }
+        }
+        
+        searchInput.addEventListener('keyup', filterTable);
+        statusFilter.addEventListener('change', filterTable);
+    });
+
+    // Delete confirmation
+    function confirmDelete(teacherId, teacherName) {
+    const deleteForm = document.getElementById('deleteForm');
+    const deleteTeacherName = document.getElementById('deleteTeacherName');
+
+    deleteTeacherName.textContent = teacherName;
+    deleteForm.action = "{{ url_for('admin.delete_teacher', teacher_id=0) }}".replace('0', teacherId);
+
+    // Bootstrap 5 modal tanpa jQuery
+    const modalEl = document.getElementById('deleteModal');
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+</script>
+{% endblock %}

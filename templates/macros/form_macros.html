@@ -1,0 +1,44 @@
+{% macro render_field(field) %}
+<div class="mb-3">
+    {{ field.label(class="form-label") }}
+    {{ field(class="form-control" + (" is-invalid" if field.errors else "")) }}
+    {% if field.errors %}
+        <div class="invalid-feedback">
+            {% for error in field.errors %}
+                {{ error }}
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% if field.description %}
+        <div class="form-text">{{ field.description }}</div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro render_select(field) %}
+<div class="mb-3">
+    {{ field.label(class="form-label") }}
+    {{ field(class="form-select" + (" is-invalid" if field.errors else "")) }}
+    {% if field.errors %}
+        <div class="invalid-feedback">
+            {% for error in field.errors %}
+                {{ error }}
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro render_checkbox(field) %}
+<div class="mb-3 form-check">
+    {{ field(class="form-check-input") }}
+    {{ field.label(class="form-check-label") }}
+    {% if field.errors %}
+        <div class="invalid-feedback d-block">
+            {% for error in field.errors %}
+                {{ error }}
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endmacro %}

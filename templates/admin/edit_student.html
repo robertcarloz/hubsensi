@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Siswa - {{ super() }}{% endblock %}
+
+{% block sidebar_nav %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.students') }}">
+        <i class="bi bi-people me-2"></i> Daftar Siswa
+    </a>
+</li>
+{% endblock %}
+
+{% block page_title %}Edit Siswa{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Form Edit Siswa</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        <label for="nis" class="form-label">NIS</label>
+                        {{ form.nis(class="form-control", id="nis", placeholder="Masukkan NIS") }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nisn" class="form-label">NISN</label>
+                        {{ form.nisn(class="form-control", id="nisn", placeholder="Masukkan NISN") }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">Nama Lengkap</label>
+                        {{ form.full_name(class="form-control", id="full_name", placeholder="Masukkan Nama Lengkap") }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        {{ form.email(class="form-control", id="email", placeholder="Masukkan Email (opsional)") }}
+                        <small class="text-muted">Kosongkan jika tidak ingin mengubah email.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="classroom_id" class="form-label">Kelas</label>
+                        {{ form.classroom_id(class="form-select", id="classroom_id") }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">QR Code Siswa</label><br>
+                        {% if student.qr_code %}
+                            <img src="{{ student.qr_code }}" alt="QR Code" class="img-thumbnail" style="width:120px;height:120px;">
+                        {% else %}
+                            <p class="text-muted">QR Code belum tersedia</p>
+                        {% endif %}
+                        <small class="text-muted d-block">QR akan digenerate ulang saat NIS berubah</small>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.students') }}" class="btn btn-outline-secondary">Kembali</a>
+                        <button type="submit" class="btn btn-primary">Update Siswa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

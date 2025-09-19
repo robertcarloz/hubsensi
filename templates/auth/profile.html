@@ -1,0 +1,419 @@
+{% extends "base.html" %}
+{% from "macros/form_macros.html" import render_field %}
+
+{% block title %}Profil Pengguna - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-person-circle me-2"></i>Profil Pengguna
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- Navigation Tabs -->
+                <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab" aria-controls="info" aria-selected="true">
+                            <i class="bi bi-info-circle me-1"></i>Informasi Profil
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">
+                            <i class="bi bi-key me-1"></i>Ubah Password
+                        </button>
+                    </li>
+                    {% if current_user.role.value == 'student' and current_user.student_profile %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="qr-tab" data-bs-toggle="tab" data-bs-target="#qr" type="button" role="tab" aria-controls="qr" aria-selected="false">
+                            <i class="bi bi-qr-code me-1"></i>QR Code Saya
+                        </button>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="profileTabsContent">
+                    <!-- Informasi Profil Tab -->
+                    <div class="tab-pane fade show active" id="info" role="tabpanel" aria-labelledby="info-tab">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-4">
+                                <div class="avatar-container">
+                                    <div class="avatar-placeholder bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3">
+                                        <i class="bi bi-person-fill fs-1"></i>
+                                    </div>
+                                    <h5>{{ current_user.username }}</h5>
+                                    <span class="badge bg-{{ 
+                                        'danger' if current_user.role.value == 'SUPERADMIN' 
+                                        else 'primary' if current_user.role.value == 'ADMIN' 
+                                        else 'info' if current_user.role.value == 'TEACHER' 
+                                        else 'success' 
+                                    }}">
+                                        {{ 
+                                            'Super Admin' if current_user.role.value == 'SUPERADMIN' 
+                                            else 'Admin Sekolah' if current_user.role.value == 'ADMIN' 
+                                            else 'Guru' if current_user.role.value == 'TEACHER' 
+                                            else 'Siswa' 
+                                        }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <form method="POST" action="{{ url_for('auth.profile') }}">
+                                    {{ profile_form.hidden_tag() }}
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {{ render_field(profile_form.username) }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ render_field(profile_form.email) }}
+                                        </div>
+                                    </div>
+                                    
+                                    {% if current_user.role.value != 'SUPERADMIN' and school %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Sekolah</label>
+                                        <input type="text" class="form-control" value="{{ school.name }}" disabled>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Additional fields based on role -->
+                                    {% if current_user.role.value == 'STUDENT' and current_user.student_profile %}
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">NIS</label>
+                                                <input type="text" class="form-control" value="{{ current_user.student_profile.nis }}" disabled>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Nama Lengkap</label>
+                                                <input type="text" class="form-control" value="{{ current_user.student_profile.full_name }}" disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Kelas</label>
+                                        <input type="text" class="form-control" 
+                                               value="{{ current_user.student_profile.classroom.name if current_user.student_profile.classroom else 'Belum ditentukan' }}" 
+                                               disabled>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if current_user.role.value == 'TEACHER' and current_user.teacher_profile %}
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">NIP</label>
+                                                <input type="text" class="form-control" value="{{ current_user.teacher_profile.nip or 'Belum diatur' }}" disabled>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Nama Lengkap</label>
+                                                <input type="text" class="form-control" value="{{ current_user.teacher_profile.full_name }}" disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Status Wali Kelas</label>
+                                        <input type="text" class="form-control" 
+                                               value="{{ 'Ya' if current_user.teacher_profile.is_homeroom else 'Tidak' }}" 
+                                               disabled>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Terakhir Login</label>
+                                        <input type="text" class="form-control" 
+                                               value="{{ current_user.last_login.strftime('%d/%m/%Y %H:%M') if current_user.last_login else 'Belum pernah login' }}" 
+                                               disabled>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Akun Dibuat</label>
+                                        <input type="text" class="form-control" 
+                                               value="{{ current_user.created_at.strftime('%d/%m/%Y %H:%M') }}" 
+                                               disabled>
+                                    </div>
+                                    
+                                    <button type="submit" name="update_profile" class="btn btn-primary">
+                                        <i class="bi bi-check-circle me-1"></i> Simpan Perubahan
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ubah Password Tab -->
+                    <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+                        <div class="row justify-content-center">
+                            <div class="col-md-8">
+                                <form method="POST" action="{{ url_for('auth.profile') }}">
+                                    {{ password_form.hidden_tag() }}
+                                    
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Pastikan password Anda kuat dan tidak mudah ditebak. Minimal 8 karakter.
+                                    </div>
+                                    
+                                    {{ render_field(password_form.current_password) }}
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {{ render_field(password_form.new_password) }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ render_field(password_form.confirm_password) }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="password-strength mt-3">
+                                        <div class="progress mb-2" style="height: 5px;">
+                                            <div class="progress-bar" id="passwordStrengthBar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <small id="passwordStrengthText" class="text-muted">Kekuatan password</small>
+                                    </div>
+                                    
+                                    <button type="submit" name="change_password" class="btn btn-primary mt-3">
+                                        <i class="bi bi-key me-1"></i> Ubah Password
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QR Code Tab (for students) -->
+                    {% if current_user.role.value == 'student' and current_user.student_profile %}
+                    <div class="tab-pane fade" id="qr" role="tabpanel" aria-labelledby="qr-tab">
+                        <div class="text-center">
+                            <h5>QR Code Absensi Saya</h5>
+                            <p class="text-muted">Gunakan QR code ini untuk absensi di kelas</p>
+                            
+                            {% if current_user.student_profile.qr_code %}
+                            <div class="qr-code-container bg-white p-3 rounded shadow-sm d-inline-block mb-4">
+                                <img src="{{current_user.student_profile.qr_code}}" 
+                                     alt="QR Code" class="img-fluid" style="max-width: 250px;">
+                            </div>
+                            {% else %}
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                QR Code belum tersedia. Silakan hubungi admin sekolah.
+                            </div>
+                            {% endif %}
+                            
+                            <div class="student-info mb-4">
+                                <div class="row justify-content-center">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6>Informasi Siswa</h6>
+                                                <table class="table table-sm">
+                                                    <tr>
+                                                        <th>NIS</th>
+                                                        <td>{{ current_user.student_profile.nis }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Nama</th>
+                                                        <td>{{ current_user.student_profile.full_name }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Kelas</th>
+                                                        <td>{{ current_user.student_profile.classroom.name if current_user.student_profile.classroom else 'Belum ditentukan' }}</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if current_user.student_profile.qr_code %}
+                            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                <a href="{{ current_user.student_profile.qr_code}}" 
+                                   download="QRCode-{{ current_user.student_profile.nis }}.png" 
+                                   class="btn btn-outline-primary">
+                                    <i class="bi bi-download me-1"></i> Download QR Code
+                                </a>
+                                <button type="button" class="btn btn-outline-secondary" onclick="printQRCode()">
+                                    <i class="bi bi-printer me-1"></i> Cetak QR Code
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-placeholder {
+        width: 120px;
+        height: 120px;
+        font-size: 3.5rem;
+    }
+    
+    .nav-tabs .nav-link {
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #6c757d;
+        font-weight: 500;
+        padding: 0.75rem 1rem;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+        background-color: transparent;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        border-bottom-color: #dee2e6;
+    }
+    
+    .qr-code-container {
+        border: 1px solid #dee2e6;
+    }
+    
+    .password-strength {
+        max-width: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Password strength indicator
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput = document.getElementById('new_password');
+        const strengthBar = document.getElementById('passwordStrengthBar');
+        const strengthText = document.getElementById('passwordStrengthText');
+        
+        if (passwordInput) {
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                let strength = 0;
+                let message = '';
+                
+                if (password.length > 0) {
+                    // Length check
+                    if (password.length >= 8) strength += 25;
+                    
+                    // Lowercase and uppercase check
+                    if (password.match(/([a-z].*[A-Z])|([A-Z].*[a-z])/)) strength += 25;
+                    
+                    // Number check
+                    if (password.match(/([0-9])/)) strength += 25;
+                    
+                    // Special character check
+                    if (password.match(/([!,@,#,$,%,^,&,*,?,_,~])/)) strength += 25;
+                }
+                
+                // Update progress bar
+                strengthBar.style.width = strength + '%';
+                
+                // Update colors and text based on strength
+                if (strength === 0) {
+                    strengthBar.className = 'progress-bar';
+                    message = '';
+                } else if (strength < 50) {
+                    strengthBar.className = 'progress-bar bg-danger';
+                    message = 'Password lemah';
+                } else if (strength < 75) {
+                    strengthBar.className = 'progress-bar bg-warning';
+                    message = 'Password cukup';
+                } else if (strength < 100) {
+                    strengthBar.className = 'progress-bar bg-info';
+                    message = 'Password kuat';
+                } else {
+                    strengthBar.className = 'progress-bar bg-success';
+                    message = 'Password sangat kuat';
+                }
+                
+                strengthText.textContent = message;
+            });
+        }
+        
+        // Handle tab persistence
+        const profileTabs = document.getElementById('profileTabs');
+        if (profileTabs) {
+            profileTabs.addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON' && e.target.hasAttribute('data-bs-target')) {
+                    const targetTab = e.target.getAttribute('data-bs-target').substring(1);
+                    localStorage.setItem('activeProfileTab', targetTab);
+                }
+            });
+            
+            // Check for saved tab state
+            const activeTab = localStorage.getItem('activeProfileTab');
+            if (activeTab) {
+                const tabTrigger = document.querySelector(`[data-bs-target="#${activeTab}"]`);
+                if (tabTrigger) {
+                    new bootstrap.Tab(tabTrigger).show();
+                }
+            }
+        }
+    });
+    
+    // Print QR code function for students
+    function printQRCode() {
+        const printContent = `
+            <html>
+                <head>
+                    <title>QR Code - {{ current_user.student_profile.full_name if current_user.student_profile else current_user.username }}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+                        .qr-container { margin: 20px 0; }
+                        .student-info { margin-bottom: 20px; }
+                        table { margin: 0 auto; border-collapse: collapse; }
+                        th, td { padding: 5px 10px; text-align: left; border: 1px solid #ddd; }
+                        th { background-color: #f8f9fa; }
+                    </style>
+                </head>
+                <body>
+                    <h2>QR Code Absensi</h2>
+                    <div class="student-info">
+                        <table>
+                            <tr>
+                                <th>Nama</th>
+                                <td>{{ current_user.student_profile.full_name if current_user.student_profile }}</td>
+                            </tr>
+                            <tr>
+                                <th>NIS</th>
+                                <td>{{ current_user.student_profile.nis if current_user.student_profile }}</td>
+                            </tr>
+                            <tr>
+                                <th>Kelas</th>
+                                <td>{{ current_user.student_profile.classroom.name if current_user.student_profile and current_user.student_profile.classroom else 'Belum ditentukan' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="qr-container">
+                        <img src="{{ url_for('static', filename=current_user.student_profile.qr_code.replace('static/', '')) if current_user.student_profile and current_user.student_profile.qr_code }}" 
+                             alt="QR Code" style="max-width: 300px;">
+                    </div>
+                    <p><small>Dicetak pada: {{ now.strftime('%d/%m/%Y %H:%M') }}</small></p>
+                </body>
+            </html>
+        `;
+        
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    }
+</script>
+{% endblock %}

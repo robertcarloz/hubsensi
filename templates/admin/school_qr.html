@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}QR Code Sekolah - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">QR Code Sekolah</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item active">QR Code Sekolah</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-qrcode me-1"></i>
+            QR Code untuk Absensi Sekolah
+        </div>
+        <div class="card-body">
+            {% if school_qr %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="text-center">
+                            <img src="{{school_qr.qr_code}}" alt="QR Code Sekolah" class="img-fluid" style="max-width: 300px;">
+                            <p class="mt-3">Scan QR code ini dengan aplikasi pemindai QR untuk absensi.</p>
+                            
+                            <div class="mt-3">
+                                <a href="{{school_qr.qr_code}}" download class="btn btn-success">
+                                    <i class="fas fa-download me-1"></i> Download QR Code
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-info-circle me-1"></i> Petunjuk Penggunaan</h5>
+                            <p>QR code ini dapat digunakan untuk:</p>
+                            <ul>
+                                <li>Absensi guru dan staf sekolah</li>
+                                <li>Akses cepat ke informasi sekolah</li>
+                            </ul>
+                            <p>Tempel QR code di tempat yang mudah diakses dan dipindai oleh warga sekolah.</p>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h5>Informasi QR Code</h5>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Sekolah</th>
+                                    <td>{{ current_user.school.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>ID Sekolah</th>
+                                    <td>{{ current_user.school_id }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Tanggal Generate</th>
+                                    <td>{{ school_qr.created_at.strftime('%d %B %Y %H:%M') }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-warning text-center">
+                    <h4><i class="fas fa-exclamation-triangle me-1"></i> QR Code Belum Tersedia</h4>
+                    <p>Silakan generate QR code untuk sekolah Anda.</p>
+                    <a href="{{ url_for('admin.generate_qr') }}" class="btn btn-primary">
+                        <i class="fas fa-qrcode me-1"></i> Generate QR Code
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-history me-1"></i>
+            Riwayat QR Code
+        </div>
+        <div class="card-body">
+            <p>Fitur ini akan menampilkan riwayat pembuatan QR code sebelumnya.</p>
+            <!-- Anda dapat menambahkan fungsi riwayat QR code di masa depan -->
+        </div>
+    </div>
+</div>
+{% endblock %}

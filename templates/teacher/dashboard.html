@@ -1,0 +1,338 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard Guru - {{ super() }}{% endblock %}
+
+{% block sidebar_nav %}
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('teacher.dashboard') }}">
+        <i class="bi bi-speedometer2 me-2"></i>
+        Dashboard
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('teacher.attendance') }}">
+        <i class="bi bi-clipboard-check me-2"></i>
+        Absensi Siswa
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('teacher.scan') }}">
+        <i class="bi bi-qr-code-scan me-2"></i>
+        Scan QR
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('teacher.my_attendance') }}">
+        <i class="bi bi-person-check me-2"></i>
+        Absensi Saya
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('auth.profile') }}">
+        <i class="bi bi-person-circle me-2"></i>
+        Profil
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('auth.logout') }}">
+        <i class="bi bi-box-arrow-right me-2"></i>
+        Logout
+    </a>
+</li>
+{% endblock %}
+
+{% block page_title %}Dashboard Guru{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <a href="{{ url_for('teacher.attendance') }}" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-clipboard-check me-1"></i> Input Absensi
+    </a>
+    <a href="{{ url_for('teacher.scan') }}" class="btn btn-sm btn-primary">
+        <i class="bi bi-qr-code-scan me-1"></i> Scan QR
+    </a>
+</div>
+{% endblock %}
+
+{% block page_content %}
+<div class="row">
+    <!-- Statistics Cards -->
+    <div class="col-md-3 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Kelas Wali</h5>
+                        <h4 class="mb-0">{{ homeroom_class.name if homeroom_class else 'Tidak ada' }}</h4>
+                    </div>
+                    <i class="bi bi-house-door fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Siswa di Kelas</h5>
+                        <h2 class="mb-0">{{ homeroom_class.students|length if homeroom_class else 0 }}</h2>
+                    </div>
+                    <i class="bi bi-people fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Absensi Hari Ini</h5>
+                        <h2 class="mb-0">{{ today_attendance_count }}</h2>
+                    </div>
+                    <i class="bi bi-clipboard-check fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Tanggal</h5>
+                        <h4 class="mb-0">{{ today.strftime('%d/%m/%Y') }}</h4>
+                    </div>
+                    <i class="bi bi-calendar-check fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Today's Attendance Summary -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Rekap Absensi Hari Ini</h5>
+                <span class="badge bg-primary">{{ today.strftime('%A, %d %B %Y') }}</span>
+            </div>
+            <div class="card-body">
+                <canvas id="attendanceChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Aksi Cepat</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('teacher.attendance') }}" class="btn btn-outline-primary text-start">
+                        <i class="bi bi-clipboard-check me-2"></i> Input Absensi Manual
+                    </a>
+                    <a href="{{ url_for('teacher.scan') }}" class="btn btn-outline-primary text-start">
+                        <i class="bi bi-qr-code-scan me-2"></i> Scan QR Code Siswa
+                    </a>
+                    <a href="{{ url_for('teacher.my_attendance') }}" class="btn btn-outline-primary text-start">
+                        <i class="bi bi-person-check me-2"></i> Lihat Absensi Saya
+                    </a>
+                    {% if homeroom_class %}
+                    <a href="{{ url_for('teacher.attendance') }}?classroom_id={{ homeroom_class.id }}&date={{ today.strftime('%Y-%m-%d') }}" 
+                       class="btn btn-outline-success text-start">
+                        <i class="bi bi-eye me-2"></i> Lihat Absensi Kelas Wali
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if homeroom_class %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Absensi Hari Ini - {{ homeroom_class.name }}</h5>
+                <a href="{{ url_for('teacher.attendance') }}?classroom_id={{ homeroom_class.id }}&date={{ today.strftime('%Y-%m-%d') }}" 
+                   class="btn btn-sm btn-outline-primary">Lihat Detail</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>NIS</th>
+                                <th>Nama Siswa</th>
+                                <th>Status</th>
+                                <th>Waktu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in homeroom_class.students %}
+                            {% set attendance = student.attendance_records|selectattr('date', 'equalto', today)|first %}
+                            <tr>
+                                <td>{{ student.nis }}</td>
+                                <td>{{ student.full_name }}</td>
+                                <td>
+                                    {% if attendance %}
+                                        <span class="badge bg-{{ 
+                                            'success' if attendance.status.value == 'hadir' 
+                                            else 'info' if attendance.status.value == 'izin' 
+                                            else 'warning' if attendance.status.value == 'sakit' 
+                                            else 'danger' 
+                                        }}">
+                                            {{ attendance.status.value|title }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Belum Absen</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if attendance %}
+                                        {{ attendance.created_at.strftime('%H:%M') }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-3">
+                                    <i class="bi bi-people text-muted fs-1 d-block mb-2"></i>
+                                    <p class="text-muted">Tidak ada siswa di kelas ini</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row mt-4">
+    <!-- Upcoming Events -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Acara Mendatang</h5>
+                <a href="#" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for event in upcoming_events[:3] %}
+                    <div class="list-group-item border-0 px-0">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ event.title }}</h6>
+                            <small class="text-muted">{{ event.start_date.strftime('%d/%m') }}</small>
+                        </div>
+                        <p class="mb-1 text-muted small">{{ event.description|truncate(50) if event.description else 'Tidak ada deskripsi' }}</p>
+                        <small class="text-muted">
+                            <i class="bi bi-{{ 'calendar-event' if event.event_type.value == 'acara' else 'calendar-check' if event.event_type.value == 'ujian' else 'calendar-x' }} me-1"></i>
+                            {{ event.event_type.value|title }}
+                        </small>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-calendar text-muted fs-1 d-block mb-2"></i>
+                        <p class="text-muted">Tidak ada acara mendatang</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activities -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Aktivitas Terbaru</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for activity in recent_activities[:3] %}
+                    <div class="list-group-item border-0 px-0">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-{{ activity.color }} text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 40px; height: 40px;">
+                                <i class="bi bi-{{ activity.icon }}"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">{{ activity.title }}</h6>
+                                <small class="text-muted">{{ activity.time }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-activity text-muted fs-1 d-block mb-2"></i>
+                        <p class="text-muted">Tidak ada aktivitas terbaru</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Attendance chart
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('attendanceChart').getContext('2d');
+        const attendanceChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Hadir', 'Izin', 'Sakit', 'Alpha', 'Belum Absen'],
+                datasets: [{
+                    data: [
+                        {{ attendance_stats.hadir }},
+                        {{ attendance_stats.izin }},
+                        {{ attendance_stats.sakit }},
+                        {{ attendance_stats.alpha }},
+                        {{ attendance_stats.belum }}
+                    ],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(23, 162, 184, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(220, 53, 69, 0.8)',
+                        'rgba(108, 117, 125, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(23, 162, 184, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(220, 53, 69, 1)',
+                        'rgba(108, 117, 125, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

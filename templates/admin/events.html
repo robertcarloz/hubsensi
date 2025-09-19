@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Kalender Event - {{ super() }}{% endblock %}
+
+{% block content %}
+<h3>Kalender Event</h3>
+
+<div id="calendar"></div>
+
+<!-- Modal Tambah/Edit -->
+<div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="eventForm">
+        {{ form.hidden_tag() }} <!-- CSRF token disini -->
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle">Tambah Event</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="eventId" name="event_id">
+          <div class="mb-3">
+            <label for="title" class="form-label">Judul</label>
+            <input type="text" class="form-control" id="title" name="title" required>
+          </div>
+          <div class="mb-3">
+            <label for="start_date" class="form-label">Tanggal Mulai</label>
+            <input type="date" class="form-control" id="start_date" name="start_date" required>
+          </div>
+          <div class="mb-3">
+            <label for="end_date" class="form-label">Tanggal Selesai</label>
+            <input type="date" class="form-control" id="end_date" name="end_date" required>
+          </div>
+          <div class="mb-3">
+            <label for="event_type" class="form-label">Jenis</label>
+            <select class="form-select" id="event_type" name="event_type">
+                <option value="acara">Acara</option>
+                <option value="libur">Libur</option>
+                <option value="ujian">Ujian</option>
+            </select>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="is_holiday" name="is_holiday">
+            <label class="form-check-label" for="is_holiday">Libur</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Simpan</button>
+          <button type="button" class="btn btn-danger" id="deleteEventBtn">Hapus</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var modal = new bootstrap.Modal(document.getElementById('eventModal'));
+    var deleteBtn = document.getElementById('deleteEventBtn');
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'id',
+        events: {{ events_json|tojson|safe }},  // PENTING: tojson
+        selectable: true,
+        select: function(info) {
+            document.getElementById('eventForm').reset();
+            document.getElementById('modalTitle').innerText = 'Tambah Event';
+            document.getElementById('eventId').value = '';
+            document.getElementById('start_date').value = info.startStr;
+            document.getElementById('end_date').value = info.endStr.slice(0,-1); // endStr exclusive
+            deleteBtn.style.display = 'none';
+            modal.show();
+        },
+        eventClick: function(info) {
+            var event = info.event;
+            document.getElementById('modalTitle').innerText = 'Edit Event';
+            document.getElementById('eventId').value = event.id;
+            document.getElementById('title').value = event.title;
+            document.getElementById('start_date').value = event.startStr;
+            document.getElementById('end_date').value = event.endStr ? event.endStr.slice(0,-1) : event.startStr;
+            document.getElementById('event_type').value = event.extendedProps.event_type;
+            document.getElementById('is_holiday').checked = event.extendedProps.is_holiday;
+            deleteBtn.style.display = 'inline-block';
+            modal.show();
+        }
+    });
+
+    calendar.render();
+
+    // Submit via AJAX
+    document.getElementById('eventForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+        formData.append('csrf_token', document.querySelector('[name=csrf_token]').value);
+        var eventId = formData.get('event_id');
+        var url = eventId ? `/admin/events/${eventId}/edit` : '/admin/events/add';
+
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+        })
+        .then(resp => resp.json())
+        .then(data => {
+            if(data.success){
+                modal.hide();
+                // langsung update event di kalender tanpa reload
+                calendar.refetchEvents();  
+            } else {
+                alert(data.message || 'Gagal menyimpan event');
+            }
+        });
+    });
+
+    // Delete event
+   deleteBtn.addEventListener('click', function(){
+    var eventId = document.getElementById('eventId').value;
+    if(!eventId) return;
+    if(!confirm('Yakin ingin menghapus event ini?')) return;
+
+    // Ambil CSRF token
+    var csrfToken = document.querySelector('[name=csrf_token]').value;
+
+    fetch(`/admin/events/${eventId}/delete`, { 
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken
+        }
+    })
+    .then(resp => resp.json())
+    .then(data => {
+        if(data.success){
+            modal.hide();
+            calendar.refetchEvents();  // refresh kalender
+        } else {
+            alert(data.message || 'Gagal menghapus event');
+        }
+    })
+    .catch(err => console.error(err));
+});
+});
+</script>
+
+{% endblock %}
