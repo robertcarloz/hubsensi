@@ -51,7 +51,6 @@ Thumbs.db
 # =====================
 # Config / Secrets
 # =====================
-config.py
 *.env
 .env.*
 secrets.json
