@@ -14,7 +14,7 @@ class TeacherForm(FlaskForm):
 class StudentForm(FlaskForm):
     nis = StringField('NIS', validators=[DataRequired()])
     nisn = StringField('NISN', validators=[Optional()])
-    email = StringField('Email', validators=[Optional(), Email()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     full_name = StringField('Nama Lengkap', validators=[DataRequired()])
     classroom_id = SelectField('Kelas', coerce=int)
     submit = SubmitField('Simpan')

@@ -56,6 +56,7 @@
 <div class="card mb-4">
     <div class="card-body">
         <form method="GET" action="{{ url_for('teacher.attendance') }}" class="row g-3">
+               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="col-md-3">
                 <label for="date" class="form-label">Tanggal</label>
                 <input type="date" class="form-control" id="date" name="date" value="{{ selected_date }}">
@@ -94,6 +95,7 @@
     <div class="card-body">
         {% if students %}
         <form method="POST" action="{{ url_for('teacher.attendance') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="date" value="{{ selected_date }}">
             <input type="hidden" name="classroom_id" value="{{ selected_classroom }}">
             

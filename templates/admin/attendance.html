@@ -1,0 +1,221 @@
+{% extends "layout.html" %}
+
+{% block title %}Absensi - {{ super() }}{% endblock %}
+
+{% block page_title %}Manajemen Absensi{% endblock %}
+
+{% block sidebar_nav %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+        <i class="bi bi-speedometer2 me-2"></i>
+        Dashboard
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.teachers') }}">
+        <i class="bi bi-person-badge me-2"></i>
+        Guru
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.students') }}">
+        <i class="bi bi-people me-2"></i>
+        Siswa
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.classrooms') }}">
+        <i class="bi bi-house-door me-2"></i>
+        Kelas
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('admin.attendance') }}">
+        <i class="bi bi-clipboard-check me-2"></i>
+        Absensi
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.events') }}">
+        <i class="bi bi-calendar-event me-2"></i>
+        Kalender
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.settings') }}">
+        <i class="bi bi-gear me-2"></i>
+        Pengaturan
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('auth.logout') }}">
+        <i class="bi bi-box-arrow-right me-2"></i>
+        Logout
+    </a>
+</li>
+{% endblock %}
+
+
+{% block page_content %}
+<div class="d-flex gap-2">
+    <a href="{{ url_for('admin.attendance_export_form') }}" class="btn btn-outline-primary">
+        <i class="bi bi-download me-1"></i> Ekspor per Bulan
+    </a>
+</div>
+<!-- Filter Section -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="date" class="form-label">Tanggal</label>
+                <input type="date" class="form-control" id="date" name="date" value="{{ selected_date }}">
+            </div>
+            <div class="col-md-3">
+                <label for="classroom_id" class="form-label">Kelas</label>
+                <select class="form-select" id="classroom_id" name="classroom_id">
+                    <option value="">-- Semua Kelas --</option>
+                    {% for classroom in classrooms %}
+                    <option value="{{ classroom.id }}" {% if selected_classroom == classroom.id %}selected{% endif %}>
+                        {{ classroom.name }} ({{ classroom.grade_level }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label d-block">&nbsp;</label>
+                <button type="submit" class="btn btn-primary mt-2">Filter</button>
+                <a href="{{ url_for('admin.attendance') }}" class="btn btn-secondary mt-2 ms-2">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabs for Student and Teacher Attendance -->
+<ul class="nav nav-tabs mb-4" id="attendanceTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="student-tab" data-bs-toggle="tab" data-bs-target="#student" type="button" role="tab" aria-controls="student" aria-selected="true">
+            Absensi Siswa
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="teacher-tab" data-bs-toggle="tab" data-bs-target="#teacher" type="button" role="tab" aria-controls="teacher" aria-selected="false">
+            Absensi Guru
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="attendanceTabsContent">
+    <!-- Student Attendance Tab -->
+    <div class="tab-pane fade show active" id="student" role="tabpanel" aria-labelledby="student-tab">
+        {% if attendance_records %}
+        <div class="card">
+            <div class="card-body table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nama Siswa</th>
+                            <th>Kelas</th>
+                            <th>Tanggal</th>
+                            <th>Status</th>
+                            <th>Catatan</th>
+                            <th>Dicatat Oleh</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in attendance_records %}
+                        <tr>
+                            <td>{{ record.student.full_name }}</td>
+                            <td>{{ record.classroom.name }}</td>
+                            <td>{{ record.date.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if record.status.value == 'hadir' %}bg-success
+                                    {% elif record.status.value == 'sakit' %}bg-warning
+                                    {% elif record.status.value == 'izin' %}bg-info
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ record.status.value | title }}
+                                </span>
+                            </td>
+                            <td>{{ record.notes or '-' }}</td>
+                            <td>{{ record.teacher.full_name if record.teacher else '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            Tidak ada data absensi siswa untuk filter yang dipilih.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Teacher Attendance Tab -->
+    <div class="tab-pane fade" id="teacher" role="tabpanel" aria-labelledby="teacher-tab">
+        {% if teacher_attendance %}
+        <div class="card">
+            <div class="card-body table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nama Guru</th>
+                            <th>Tanggal</th>
+                            <th>Jam Masuk</th>
+                            <th>Jam Keluar</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in teacher_attendance %}
+                        <tr>
+                            <td>{{ record.teacher.full_name }}</td>
+                            <td>{{ record.date.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ record.time_in.strftime('%H:%M') if record.time_in else '-' }}</td>
+                            <td>{{ record.time_out.strftime('%H:%M') if record.time_out else '-' }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if record.status.value == 'hadir' %}bg-success
+                                    {% elif record.status.value == 'sakit' %}bg-warning
+                                    {% elif record.status.value == 'izin' %}bg-info
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ record.status.value | title }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            Tidak ada data absensi guru untuk filter yang dipilih.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle tab persistence
+    const activeTab = localStorage.getItem('activeAttendanceTab');
+    if (activeTab) {
+        const tabTrigger = new bootstrap.Tab(document.querySelector(activeTab));
+        tabTrigger.show();
+    }
+
+    const tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabEls.forEach(tabEl => {
+        tabEl.addEventListener('shown.bs.tab', function(event) {
+            localStorage.setItem('activeAttendanceTab', event.target.getAttribute('data-bs-target'));
+        });
+    });
+});
+</script>
+{% endblock %}

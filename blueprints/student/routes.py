@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash, send_file
+from flask import render_template, redirect, request, url_for, flash, send_file
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta
 from extensions import db
@@ -50,36 +50,39 @@ def dashboard():
 @student_bp.route('/attendance')
 def attendance():
     student = Student.query.filter_by(user_id=current_user.id).first()
-    
     if not student:
-        flash('Data siswa tidak ditemukan.', 'danger')
+        flash("Data siswa tidak ditemukan.", "danger")
         return redirect(url_for('auth.logout'))
-    
-    # Get filter parameters
-    month = request.args.get('month', datetime.now().month)
-    year = request.args.get('year', datetime.now().year)
-    
-    # Get attendance records
-    attendance_records = Attendance.query.filter(
-        Attendance.student_id == student.id,
-        db.extract('year', Attendance.date) == year,
-        db.extract('month', Attendance.date) == month
-    ).order_by(Attendance.date.desc()).all()
-    
-    return render_template('student/attendance.html', 
-                         student=student,
-                         attendance_records=attendance_records,
-                         selected_month=month,
-                         selected_year=year)
+
+    # Ambil semua absensi siswa
+    attendance_records = Attendance.query.filter_by(student_id=student.id)\
+                            .order_by(Attendance.date.desc()).all()
+
+    # Hitung jumlah per status
+    status_count = {
+        'hadir': 0,
+        'izin': 0,
+        'sakit': 0,
+        'alpha': 0
+    }
+    for record in attendance_records:
+        status_count[record.status.value] += 1
+
+    return render_template(
+        'student/attendance.html',
+        student=student,
+        attendance_records=attendance_records,
+        status_count=status_count
+    )
 
 @student_bp.route('/qr_code')
 def qr_code():
     student = Student.query.filter_by(user_id=current_user.id).first()
-    
+
     if not student:
-        flash('Data siswa tidak ditemukan.', 'danger')
+        flash("Data siswa tidak ditemukan.", "danger")
         return redirect(url_for('auth.logout'))
-    
+
     return render_template('student/qr_code.html', student=student)
 
 @student_bp.route('/download_qr')

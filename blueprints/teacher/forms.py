@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import SelectField, SubmitField
+from wtforms import HiddenField, SelectField, SubmitField
 from wtforms.validators import DataRequired
 
 class AttendanceForm(FlaskForm):
@@ -10,3 +10,8 @@ class AttendanceForm(FlaskForm):
         ('alpha', 'Alpha')
     ], validators=[DataRequired()])
     submit = SubmitField('Simpan')
+
+class BulkAttendanceForm(FlaskForm):
+    date = HiddenField('Tanggal', validators=[DataRequired()])
+    classroom_id = HiddenField('Kelas', validators=[DataRequired()])
+    # Kita akan generate field untuk setiap siswa dynamically

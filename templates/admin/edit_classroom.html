@@ -1,10 +1,11 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
 
 {% block title %}Edit Kelas - {{ super() }}{% endblock %}
 
+{% block page_title %}Edit Kelas: {{ classroom.name }}{% endblock %}
 {% block sidebar_nav %}
 <li class="nav-item">
-    <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+    <a class="nav-link active" href="{{ url_for('admin.dashboard') }}">
         <i class="bi bi-speedometer2 me-2"></i>
         Dashboard
     </a>
@@ -22,7 +23,7 @@
     </a>
 </li>
 <li class="nav-item">
-    <a class="nav-link active" href="{{ url_for('admin.classrooms') }}">
+    <a class="nav-link" href="{{ url_for('admin.classrooms') }}">
         <i class="bi bi-house-door me-2"></i>
         Kelas
     </a>
@@ -52,116 +53,100 @@
     </a>
 </li>
 {% endblock %}
-
-{% block page_title %}Edit Kelas: {{ classroom.name }}{% endblock %}
-
-{% block page_actions %}
-<a href="{{ url_for('admin.classrooms') }}" class="btn btn-secondary btn-sm">
-    <i class="bi bi-arrow-left me-1"></i> Kembali
-</a>
-{% endblock %}
-
-{% block content %}
-<div class="card">
-    <div class="card-header">
-        <h5 class="card-title mb-0">Form Edit Kelas</h5>
-    </div>
-    <div class="card-body">
-        <form method="POST">
-            {{ form.hidden_tag() }}
-            
-            <div class="row">
-                <div class="col-md-6">
+{% block page_content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.csrf_token }}
+                    
                     <div class="mb-3">
-                        {{ form.name.label(class="form-label") }}
+                        <label for="name" class="form-label">Nama Kelas</label>
                         {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
                         {% if form.name.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.name.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
+                        <div class="invalid-feedback">
+                            {% for error in form.name.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
                         {% endif %}
                     </div>
-                </div>
-                
-                <div class="col-md-6">
+                    
                     <div class="mb-3">
-                        {{ form.grade_level.label(class="form-label") }}
+                        <label for="grade_level" class="form-label">Tingkat</label>
                         {{ form.grade_level(class="form-control" + (" is-invalid" if form.grade_level.errors else "")) }}
                         {% if form.grade_level.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.grade_level.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
+                        <div class="invalid-feedback">
+                            {% for error in form.grade_level.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
                         {% endif %}
-                        <div class="form-text">Contoh: Kelas 7, Kelas 10, dll.</div>
                     </div>
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-6">
+                    
                     <div class="mb-3">
-                        {{ form.homeroom_teacher_id.label(class="form-label") }}
+                        <label for="homeroom_teacher_id" class="form-label">Wali Kelas</label>
                         {{ form.homeroom_teacher_id(class="form-select" + (" is-invalid" if form.homeroom_teacher_id.errors else "")) }}
                         {% if form.homeroom_teacher_id.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.homeroom_teacher_id.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
+                        <div class="invalid-feedback">
+                            {% for error in form.homeroom_teacher_id.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
                         {% endif %}
-                        <div class="form-text">Pilih guru yang akan menjadi wali kelas</div>
+                        {% if classroom.homeroom_teacher %}
+                        <div class="form-text">
+                            Wali kelas saat ini: <strong>{{ classroom.homeroom_teacher.full_name }}</strong>
+                        </div>
+                        {% endif %}
                     </div>
+                    
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('admin.classrooms') }}" class="btn btn-secondary">Batal</a>
+                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Informasi Kelas</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Tanggal Dibuat:</strong> {{ classroom.created_at.strftime('%d %B %Y') }}
                 </div>
-            </div>
-            
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check-circle me-1"></i> Simpan Perubahan
-                </button>
-                <a href="{{ url_for('admin.classrooms') }}" class="btn btn-secondary">
-                    <i class="bi bi-x-circle me-1"></i> Batal
-                </a>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="card mt-4">
-    <div class="card-header">
-        <h5 class="card-title mb-0">Siswa di Kelas Ini</h5>
-    </div>
-    <div class="card-body">
-        {% if classroom.students %}
-            <div class="table-responsive">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>NIS</th>
-                            <th>Nama Lengkap</th>
-                            <th>Tanggal Bergabung</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for student in classroom.students %}
-                        <tr>
-                            <td>{{ student.nis }}</td>
-                            <td>{{ student.full_name }}</td>
-                            <td>{{ student.created_at.strftime('%d/%m/%Y') }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="text-center py-3">
-                <i class="bi bi-people text-muted fs-1 d-block mb-2"></i>
+                <div class="mb-3">
+                    <strong>Terakhir Diupdate:</strong> {{ classroom.updated_at.strftime('%d %B %Y') }}
+                </div>
+                <div class="mb-3">
+                    <strong>Jumlah Siswa:</strong> {{ classroom.students|length }} siswa
+                </div>
+                
+                <hr>
+                
+                <h6>Daftar Siswa</h6>
+                {% if classroom.students %}
+                <div class="list-group">
+                    {% for student in classroom.students %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold">{{ student.full_name }}</div>
+                            <small class="text-muted">{{ student.nis }}</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">{{ loop.index }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
                 <p class="text-muted">Belum ada siswa di kelas ini</p>
+                {% endif %}
             </div>
-        {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

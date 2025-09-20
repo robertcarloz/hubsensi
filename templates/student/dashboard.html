@@ -1,340 +1,104 @@
 {% extends "layout.html" %}
 
-{% block title %}Dashboard Siswa - {{ super() }}{% endblock %}
+{% block title %}Dashboard - {{ super() }}{% endblock %}
 
 {% block sidebar_nav %}
 <li class="nav-item">
     <a class="nav-link active" href="{{ url_for('student.dashboard') }}">
-        <i class="bi bi-speedometer2 me-2"></i>
-        Dashboard
-    </a>
-</li>
-<li class="nav-item">
-    <a class="nav-link" href="{{ url_for('student.attendance') }}">
-        <i class="bi bi-clipboard-check me-2"></i>
-        Absensi Saya
+        <i class="bi bi-speedometer2 me-2"></i> Dashboard
     </a>
 </li>
 <li class="nav-item">
     <a class="nav-link" href="{{ url_for('student.qr_code') }}">
-        <i class="bi bi-qr-code me-2"></i>
-        QR Code Saya
+        <i class="bi bi-qr-code me-2"></i> Info QR
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('student.attendance') }}">
+        <i class="bi bi-graph-up me-2"></i> Absensi
     </a>
 </li>
 <li class="nav-item">
     <a class="nav-link" href="{{ url_for('auth.profile') }}">
-        <i class="bi bi-person-circle me-2"></i>
-        Profil
+        <i class="bi bi-person-circle me-2"></i> Profil
     </a>
 </li>
 <li class="nav-item">
     <a class="nav-link" href="{{ url_for('auth.logout') }}">
-        <i class="bi bi-box-arrow-right me-2"></i>
-        Logout
+        <i class="bi bi-box-arrow-right me-2"></i> Logout
     </a>
 </li>
 {% endblock %}
 
 {% block page_title %}Dashboard Siswa{% endblock %}
 
-{% block page_actions %}
-<div class="btn-group">
-    <a href="{{ url_for('student.qr_code') }}" class="btn btn-sm btn-primary">
-        <i class="bi bi-qr-code me-1"></i> Lihat QR Code
-    </a>
-    <a href="{{ url_for('student.attendance') }}" class="btn btn-sm btn-outline-primary">
-        <i class="bi bi-clipboard-check me-1"></i> Lihat Absensi
-    </a>
-</div>
-{% endblock %}
-
 {% block page_content %}
 <div class="row">
-    <!-- Student Info Card -->
-    <div class="col-md-4 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">Informasi Siswa</h5>
-            </div>
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
-                         style="width: 80px; height: 80px;">
-                        <i class="bi bi-person-circle text-primary fs-2"></i>
-                    </div>
-                    <h4>{{ student.full_name }}</h4>
-                    <p class="text-muted mb-0">NIS: {{ student.nis }}</p>
-                </div>
-                
-                <div class="student-details">
-                    <div class="d-flex justify-content-between py-2 border-bottom">
-                        <strong>Kelas:</strong>
-                        <span>{{ student.classroom.name if student.classroom else 'Belum ditentukan' }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between py-2 border-bottom">
-                        <strong>Status:</strong>
-                        <span class="badge bg-success">Aktif</span>
-                    </div>
-                    <div class="d-flex justify-content-between py-2">
-                        <strong>Terakhir Login:</strong>
-                        <span>{{ current_user.last_login.strftime('%d/%m/%Y %H:%M') if current_user.last_login else 'Belum pernah' }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Attendance Stats -->
-    <div class="col-md-8 mb-4">
-        <div class="card h-100">
+    <!-- Info Siswa -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
             <div class="card-header">
-                <h5 class="card-title mb-0">Statistik Kehadiran (30 Hari Terakhir)</h5>
+                <h5 class="card-title mb-0">Data Diri</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3 text-center mb-3">
-                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
-                             style="width: 60px; height: 60px;">
-                            <i class="bi bi-check-circle text-success fs-4"></i>
-                        </div>
-                        <h3>{{ status_count.hadir }}</h3>
-                        <p class="text-muted mb-0">Hadir</p>
-                    </div>
-                    
-                    <div class="col-md-3 text-center mb-3">
-                        <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
-                             style="width: 60px; height: 60px;">
-                            <i class="bi bi-info-circle text-info fs-4"></i>
-                        </div>
-                        <h3>{{ status_count.izin }}</h3>
-                        <p class="text-muted mb-0">Izin</p>
-                    </div>
-                    
-                    <div class="col-md-3 text-center mb-3">
-                        <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
-                             style="width: 60px; height: 60px;">
-                            <i class="bi bi-bandaid text-warning fs-4"></i>
-                        </div>
-                        <h3>{{ status_count.sakit }}</h3>
-                        <p class="text-muted mb-0">Sakit</p>
-                    </div>
-                    
-                    <div class="col-md-3 text-center mb-3">
-                        <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
-                             style="width: 60px; height: 60px;">
-                            <i class="bi bi-x-circle text-danger fs-4"></i>
-                        </div>
-                        <h3>{{ status_count.alpha }}</h3>
-                        <p class="text-muted mb-0">Alpha</p>
-                    </div>
-                </div>
-                
-                <div class="mt-3">
-                    <canvas id="attendanceChart" height="100"></canvas>
-                </div>
+                <p><strong>NIS:</strong> {{ student.nis }}</p>
+                {% if student.nisn %}
+                <p><strong>NISN:</strong> {{ student.nisn }}</p>
+                {% endif %}
+                <p><strong>Nama:</strong> {{ student.full_name }}</p>
+                {% if student.classroom %}
+                <p><strong>Kelas:</strong> {{ student.classroom.name }}</p>
+                {% endif %}
+                {% if student.qr_code %}
+                <p><strong>QR Code:</strong></p>
+                <img src="{{ student.qr_code }}" alt="QR Code" class="img-fluid">
+                {% endif %}
             </div>
         </div>
     </div>
-</div>
 
-<div class="row mt-4">
-    <!-- Recent Attendance -->
-    <div class="col-md-8">
-        <div class="card">
+    <!-- Rekap Absensi -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Absensi Terbaru</h5>
-                <a href="{{ url_for('student.attendance') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+                <h5 class="card-title mb-0">Rekap Absensi 30 Hari Terakhir</h5>
+                <div>
+                    <span class="badge bg-success">Hadir: {{ status_count.hadir }}</span>
+                    <span class="badge bg-warning text-dark">Izin: {{ status_count.izin }}</span>
+                    <span class="badge bg-info text-dark">Sakit: {{ status_count.sakit }}</span>
+                    <span class="badge bg-danger">Alpha: {{ status_count.alpha }}</span>
+                </div>
             </div>
             <div class="card-body">
+                {% if attendance_records %}
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Tanggal</th>
-                                <th>Hari</th>
                                 <th>Status</th>
-                                <th>Mata Pelajaran</th>
-                                <th>Keterangan</th>
+                                <th>Catatan</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for record in attendance_records[:5] %}
+                            {% for record in attendance_records %}
                             <tr>
-                                <td>{{ record.date.strftime('%d/%m/%Y') }}</td>
-                                <td>{{ ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'][record.date.weekday()] }}</td>
-                                <td>
-                                    <span class="badge bg-{{ 
-                                        'success' if record.status.value == 'hadir' 
-                                        else 'info' if record.status.value == 'izin' 
-                                        else 'warning' if record.status.value == 'sakit' 
-                                        else 'danger' 
-                                    }}">
-                                        {{ record.status.value|title }}
-                                    </span>
-                                </td>
-                                <td>{{ record.subject if record.subject else 'Umum' }}</td>
+                                <td>{{ record.date.strftime('%d-%m-%Y') }}</td>
+                                <td>{{ record.status.value|capitalize }}</td>
                                 <td>{{ record.notes if record.notes else '-' }}</td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="5" class="text-center py-4">
-                                    <i class="bi bi-clipboard-x text-muted fs-1 d-block mb-2"></i>
-                                    <p class="text-muted">Belum ada data absensi</p>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Quick Actions -->
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Aksi Cepat</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ url_for('student.qr_code') }}" class="btn btn-outline-primary text-start">
-                        <i class="bi bi-qr-code me-2"></i> Tampilkan QR Code
-                    </a>
-                    <a href="{{ url_for('student.attendance') }}" class="btn btn-outline-primary text-start">
-                        <i class="bi bi-clipboard-check me-2"></i> Lihat Absensi Saya
-                    </a>
-                    <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-primary text-start">
-                        <i class="bi bi-person-circle me-2"></i> Edit Profil
-                    </a>
-                    <button onclick="window.print()" class="btn btn-outline-secondary text-start">
-                        <i class="bi bi-printer me-2"></i> Cetak Dashboard
-                    </button>
-                </div>
-                
-                <div class="mt-4 pt-3 border-top">
-                    <h6 class="mb-3">Info Penting</h6>
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-1"></i>
-                        Gunakan QR Code Anda untuk absensi di kelas. Tunjukkan kepada guru saat diminta.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mt-4">
-    <!-- Schedule for Today -->
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Jadwal Hari Ini ({{ today.strftime('%A, %d %B %Y') }})</h5>
-            </div>
-            <div class="card-body">
-                {% if today_schedule %}
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Waktu</th>
-                                <th>Mata Pelajaran</th>
-                                <th>Guru</th>
-                                <th>Ruangan</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for schedule in today_schedule %}
-                            <tr>
-                                <td>{{ schedule.start_time }} - {{ schedule.end_time }}</td>
-                                <td>{{ schedule.subject }}</td>
-                                <td>{{ schedule.teacher }}</td>
-                                <td>{{ schedule.room }}</td>
-                                <td>
-                                    {% set attendance = attendance_records|selectattr('date', 'equalto', today)|first %}
-                                    <span class="badge bg-{{ 
-                                        'success' if attendance and attendance.status.value == 'hadir' 
-                                        else 'info' if attendance and attendance.status.value == 'izin' 
-                                        else 'warning' if attendance and attendance.status.value == 'sakit' 
-                                        else 'secondary' if not attendance
-                                        else 'danger' 
-                                    }}">
-                                        {% if attendance %}
-                                            {{ attendance.status.value|title }}
-                                        {% else %}
-                                            Belum Absen
-                                        {% endif %}
-                                    </span>
-                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
                 {% else %}
-                <div class="text-center py-3">
-                    <i class="bi bi-calendar-x text-muted fs-1 d-block mb-2"></i>
-                    <p class="text-muted">Tidak ada jadwal untuk hari ini</p>
+                <div class="text-center py-5">
+                    <i class="bi bi-clipboard-check text-muted fs-1 d-block mb-3"></i>
+                    <p class="text-muted">Belum ada data absensi untuk 30 hari terakhir.</p>
                 </div>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Attendance chart
-        const ctx = document.getElementById('attendanceChart').getContext('2d');
-        const attendanceChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Hadir', 'Izin', 'Sakit', 'Alpha'],
-                datasets: [{
-                    label: 'Jumlah Kehadiran',
-                    data: [
-                        {{ status_count.hadir }},
-                        {{ status_count.izin }},
-                        {{ status_count.sakit }},
-                        {{ status_count.alpha }}
-                    ],
-                    backgroundColor: [
-                        'rgba(40, 167, 69, 0.7)',
-                        'rgba(23, 162, 184, 0.7)',
-                        'rgba(255, 193, 7, 0.7)',
-                        'rgba(220, 53, 69, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(40, 167, 69, 1)',
-                        'rgba(23, 162, 184, 1)',
-                        'rgba(255, 193, 7, 1)',
-                        'rgba(220, 53, 69, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                indexAxis: 'y',
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-    });
-</script>
 {% endblock %}

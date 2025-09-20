@@ -2,28 +2,76 @@
 
 {% block title %}Tambah Kelas - {{ super() }}{% endblock %}
 
-{% block page_title %}Tambah Kelas{% endblock %}
+{% block page_title %}Tambah Kelas Baru{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-body">
-        <form method="POST">
-            {{ form.hidden_tag() }}
-            <div class="mb-3">
-                {{ form.name.label(class="form-label") }}
-                {{ form.name(class="form-control") }}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.csrf_token }}
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nama Kelas</label>
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                        {% if form.name.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.name.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="grade_level" class="form-label">Tingkat</label>
+                        {{ form.grade_level(class="form-control" + (" is-invalid" if form.grade_level.errors else "")) }}
+                        {% if form.grade_level.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.grade_level.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="homeroom_teacher_id" class="form-label">Wali Kelas</label>
+                        {{ form.homeroom_teacher_id(class="form-select" + (" is-invalid" if form.homeroom_teacher_id.errors else "")) }}
+                        {% if form.homeroom_teacher_id.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.homeroom_teacher_id.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">Hanya guru yang belum menjadi wali kelas yang ditampilkan</div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('admin.classrooms') }}" class="btn btn-secondary">Batal</a>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
             </div>
-            <div class="mb-3">
-                {{ form.grade_level.label(class="form-label") }}
-                {{ form.grade_level(class="form-control") }}
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Informasi</h5>
             </div>
-            <div class="mb-3">
-                {{ form.homeroom_teacher_id.label(class="form-label") }}
-                {{ form.homeroom_teacher_id(class="form-select") }}
+            <div class="card-body">
+                <p>Pastikan data yang dimasukkan sudah benar sebelum disimpan.</p>
+                <ul>
+                    <li>Nama kelas harus unik dalam satu sekolah</li>
+                    <li>Tingkat kelas dapat diisi dengan angka atau kombinasi angka dan huruf</li>
+                    <li>Wali kelas akan otomatis berstatus sebagai wali kelas setelah dipilih</li>
+                </ul>
             </div>
-            <button type="submit" class="btn btn-primary">Simpan</button>
-            <a href="{{ url_for('admin.classrooms') }}" class="btn btn-secondary">Batal</a>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %}

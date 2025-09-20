@@ -148,26 +148,10 @@ def create_app(config_class=Config):
 app = create_app()
 
 if __name__ == '__main__':
-    # Create tables if they don't exist
-    with app.app_context():
-        db.create_all()
-        
-        # Create initial superadmin user if it doesn't exist
-        superadmin = User.query.filter_by(role=UserRole.SUPERADMIN).first()
-        if not superadmin:
-            superadmin = User(
-                username='superadmin',
-                email='superadmin@hubsensi.com',
-                role=UserRole.SUPERADMIN
-            )
-            superadmin.set_password('superadmin123')
-            db.session.add(superadmin)
-            db.session.commit()
-            print("Initial superadmin user created:")
-            print("Username: superadmin")
-            print("Password: superadmin123")
-            print("Please change the password after first login!")
-    
-    # Run the application
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=app.config.get('DEBUG', False))
+    app.run(
+    host="0.0.0.0",
+    port=port,
+    debug=app.config.get('DEBUG', False),
+    threaded = True
+)

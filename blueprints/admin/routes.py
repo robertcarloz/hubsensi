@@ -1,16 +1,17 @@
 from collections import Counter
+import csv
 from functools import wraps
 import secrets
-from flask import current_app, render_template, redirect, url_for, flash, request, jsonify,send_file
+from flask import Response, current_app, render_template, redirect, url_for, flash, request, jsonify,send_file
 from flask_login import login_required, current_user
 import qrcode
 import os
 from io import BytesIO
 import base64
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import io
 from extensions import db
-from models import EventType, User, UserRole, School, Teacher, Student, Classroom, SchoolEvent, SchoolQRCode, Attendance
+from models import EventType, TeacherAttendance, User, UserRole, School, Teacher, Student, Classroom, SchoolEvent, SchoolQRCode, Attendance
 from . import admin_bp
 from .forms import TeacherForm, StudentForm, ClassroomForm, EventForm, SchoolSettingsForm
 import pandas as pd
@@ -268,13 +269,15 @@ def add_student():
             return render_template('admin/add_student.html', form=form)
 
         # Tentukan email default
-        email = form.email.data.strip() if form.email.data else f"student_{form.nis.data}@school{current_user.school_id}.local"
+        email = form.email.data.strip()
 
         # Validasi email
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             flash(f'Email {email} sudah digunakan!', 'danger')
             return render_template('admin/add_student.html', form=form)
+        elif (email is None):
+            flash (f"Email wajib di isi untuk mengirim username dan password siswa")
 
         # Generate password
         password = secrets.token_urlsafe(8)
@@ -611,12 +614,27 @@ def download_template():
     )
 
 
-
 @admin_bp.route('/classrooms')
 @require_admin
 def classrooms():
     classrooms = Classroom.query.filter_by(school_id=current_user.school_id).all()
-    return render_template('admin/classrooms.html', classrooms=classrooms)
+    teachers = Teacher.query.filter_by(school_id=current_user.school_id).all()
+    return render_template('admin/classrooms.html', classrooms=classrooms, teachers=teachers)
+
+@admin_bp.route('/classrooms/<int:classroom_id>/data')
+@require_admin
+def get_classroom_data(classroom_id):
+    classroom = Classroom.query.filter_by(
+        id=classroom_id,
+        school_id=current_user.school_id
+    ).first_or_404()
+    
+    return jsonify({
+        'id': classroom.id,
+        'name': classroom.name,
+        'grade_level': classroom.grade_level,
+        'homeroom_teacher_id': classroom.homeroom_teacher_id
+    })
 
 @admin_bp.route('/classrooms/add', methods=['GET', 'POST'])
 @require_admin
@@ -662,7 +680,7 @@ def edit_classroom(classroom_id):
     
     form = ClassroomForm(obj=classroom)
     
-    # Populate teacher choices
+    # Populate teacher choices - include all teachers, not just non-homeroom
     form.homeroom_teacher_id.choices = [(0, '-- Pilih Wali Kelas --')] + [
         (t.id, t.full_name) for t in Teacher.query.filter_by(
             school_id=current_user.school_id
@@ -705,23 +723,168 @@ def attendance():
     # Get classrooms for filter
     classrooms = Classroom.query.filter_by(school_id=current_user.school_id).all()
     
-    # Get attendance records
-    query = Attendance.query.filter_by(
+    # Get student attendance records
+    student_query = Attendance.query.filter_by(
         school_id=current_user.school_id,
         date=date
     )
     
     if classroom_id:
-        query = query.filter_by(classroom_id=classroom_id)
+        student_query = student_query.filter_by(classroom_id=classroom_id)
     
-    attendance_records = query.all()
+    attendance_records = student_query.all()
+    
+    # Get teacher attendance records for the same date
+    teacher_attendance = TeacherAttendance.query.filter_by(
+        school_id=current_user.school_id,
+        date=date
+    ).all()
     
     return render_template('admin/attendance.html', 
                          attendance_records=attendance_records,
+                         teacher_attendance=teacher_attendance,
                          classrooms=classrooms,
                          selected_date=date.strftime('%Y-%m-%d'),
                          selected_classroom=classroom_id)
 
+@admin_bp.route('/attendance/export')
+@require_admin
+def attendance_export_form():
+    # Get classrooms for filter
+    classrooms = Classroom.query.filter_by(school_id=current_user.school_id).all()
+    
+    current_date = datetime.now()
+    
+    return render_template('admin/ekspor_absensi.html',
+                         classrooms=classrooms,
+                         current_month=current_date.month,
+                         current_year=current_date.year)
+
+@admin_bp.route('/attendance/export/data')
+@require_admin
+def attendance_export():
+    # Get parameters
+    export_type = request.args.get('export_type', 'student')
+    month = request.args.get('month', type=int, default=datetime.now().month)
+    year = request.args.get('year', type=int, default=datetime.now().year)
+    classroom_id = request.args.get('classroom_id', type=int)
+    
+    # Validate month and year
+    if not (1 <= month <= 12):
+        month = datetime.now().month
+    if year < 2000 or year > 2100:
+        year = datetime.now().year
+    
+    # Calculate date range for the month
+    start_date = date(year, month, 1)
+    if month == 12:
+        end_date = date(year + 1, 1, 1)
+    else:
+        end_date = date(year, month + 1, 1)
+    
+    if export_type == 'student':
+        # Get student attendance records for the month
+        query = Attendance.query.filter(
+            Attendance.school_id == current_user.school_id,
+            Attendance.date >= start_date,
+            Attendance.date < end_date
+        )
+        
+        if classroom_id:
+            query = query.filter_by(classroom_id=classroom_id)
+        
+        attendance_records = query.all()
+        
+        # Prepare data for Excel
+        data = []
+        for record in attendance_records:
+            data.append({
+                'Nama Siswa': record.student.full_name,
+                'Kelas': record.classroom.name,
+                'Tanggal': record.date.strftime('%d/%m/%Y'),
+                'Status': record.status.value.title(),
+                'Catatan': record.notes or '',
+                'Dicatat Oleh': record.teacher.full_name if record.teacher else ''
+            })
+        
+        # Create DataFrame
+        df = pd.DataFrame(data)
+        
+        # Create Excel file in memory
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, sheet_name='Absensi Siswa', index=False)
+            
+            # Auto-adjust columns width
+            worksheet = writer.sheets['Absensi Siswa']
+            for column in worksheet.columns:
+                max_length = 0
+                column_letter = column[0].column_letter
+                for cell in column:
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(str(cell.value))
+                    except:
+                        pass
+                adjusted_width = min(max_length + 2, 50)
+                worksheet.column_dimensions[column_letter].width = adjusted_width
+        
+        output.seek(0)
+        
+        filename = f"absensi_siswa_{month:02d}_{year}.xlsx"
+        
+    else:
+        # Get teacher attendance records for the month
+        teacher_attendance = TeacherAttendance.query.filter(
+            TeacherAttendance.school_id == current_user.school_id,
+            TeacherAttendance.date >= start_date,
+            TeacherAttendance.date < end_date
+        ).all()
+        
+        # Prepare data for Excel
+        data = []
+        for record in teacher_attendance:
+            data.append({
+                'Nama Guru': record.teacher.full_name,
+                'Tanggal': record.date.strftime('%d/%m/%Y'),
+                'Jam Masuk': record.time_in.strftime('%H:%M') if record.time_in else '',
+                'Jam Keluar': record.time_out.strftime('%H:%M') if record.time_out else '',
+                'Status': record.status.value.title()
+            })
+        
+        # Create DataFrame
+        df = pd.DataFrame(data)
+        
+        # Create Excel file in memory
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, sheet_name='Absensi Guru', index=False)
+            
+            # Auto-adjust columns width
+            worksheet = writer.sheets['Absensi Guru']
+            for column in worksheet.columns:
+                max_length = 0
+                column_letter = column[0].column_letter
+                for cell in column:
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(str(cell.value))
+                    except:
+                        pass
+                adjusted_width = min(max_length + 2, 50)
+                worksheet.column_dimensions[column_letter].width = adjusted_width
+        
+        output.seek(0)
+        
+        filename = f"absensi_guru_{month:02d}_{year}.xlsx"
+    
+    return send_file(
+        output,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=filename
+    )
+    
 @admin_bp.route('/events')
 @require_admin
 def events():

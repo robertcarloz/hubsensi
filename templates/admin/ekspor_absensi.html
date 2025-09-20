@@ -1,0 +1,157 @@
+{% extends "layout.html" %}
+
+{% block title %}Ekspor Absensi - {{ super() }}{% endblock %}
+
+{% block page_title %}Ekspor Data Absensi{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.attendance') }}">Absensi</a></li>
+<li class="breadcrumb-item active">Ekspor</li>
+{% endblock %}
+{% block sidebar_nav %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+        <i class="bi bi-speedometer2 me-2"></i>
+        Dashboard
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.teachers') }}">
+        <i class="bi bi-person-badge me-2"></i>
+        Guru
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.students') }}">
+        <i class="bi bi-people me-2"></i>
+        Siswa
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.classrooms') }}">
+        <i class="bi bi-house-door me-2"></i>
+        Kelas
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('admin.attendance') }}">
+        <i class="bi bi-clipboard-check me-2"></i>
+        Absensi
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.events') }}">
+        <i class="bi bi-calendar-event me-2"></i>
+        Kalender
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.settings') }}">
+        <i class="bi bi-gear me-2"></i>
+        Pengaturan
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('auth.logout') }}">
+        <i class="bi bi-box-arrow-right me-2"></i>
+        Logout
+    </a>
+</li>
+{% endblock %}
+{% block page_content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('admin.attendance_export') }}">
+                    <div class="mb-3">
+                        <label for="export_type" class="form-label">Jenis Data</label>
+                        <select class="form-select" id="export_type" name="export_type" required>
+                            <option value="student">Absensi Siswa</option>
+                            <option value="teacher">Absensi Guru</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="month" class="form-label">Bulan</label>
+                        <select class="form-select" id="month" name="month" required>
+                            <option value="1" {% if current_month == 1 %}selected{% endif %}>Januari</option>
+                            <option value="2" {% if current_month == 2 %}selected{% endif %}>Februari</option>
+                            <option value="3" {% if current_month == 3 %}selected{% endif %}>Maret</option>
+                            <option value="4" {% if current_month == 4 %}selected{% endif %}>April</option>
+                            <option value="5" {% if current_month == 5 %}selected{% endif %}>Mei</option>
+                            <option value="6" {% if current_month == 6 %}selected{% endif %}>Juni</option>
+                            <option value="7" {% if current_month == 7 %}selected{% endif %}>Juli</option>
+                            <option value="8" {% if current_month == 8 %}selected{% endif %}>Agustus</option>
+                            <option value="9" {% if current_month == 9 %}selected{% endif %}>September</option>
+                            <option value="10" {% if current_month == 10 %}selected{% endif %}>Oktober</option>
+                            <option value="11" {% if current_month == 11 %}selected{% endif %}>November</option>
+                            <option value="12" {% if current_month == 12 %}selected{% endif %}>Desember</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="year" class="form-label">Tahun</label>
+                        <select class="form-select" id="year" name="year" required>
+                            {% for year in range(current_year - 5, current_year + 1) %}
+                            <option value="{{ year }}" {% if year == current_year %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="classroom_id" class="form-label">Kelas (Opsional)</label>
+                        <select class="form-select" id="classroom_id" name="classroom_id">
+                            <option value="">-- Semua Kelas --</option>
+                            {% for classroom in classrooms %}
+                            <option value="{{ classroom.id }}">{{ classroom.name }} ({{ classroom.grade_level }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Hanya berlaku untuk ekspor data siswa</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-download me-1"></i> Ekspor Data
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Informasi Ekspor</h5>
+            </div>
+            <div class="card-body">
+                <h6>Format File</h6>
+                <p>Data akan diekspor dalam format Excel (.xlsx) dengan struktur kolom yang berbeda untuk siswa dan guru.</p>
+                
+                <h6>Data Siswa</h6>
+                <ul class="small">
+                    <li>Nama Siswa</li>
+                    <li>Kelas</li>
+                    <li>Tanggal</li>
+                    <li>Status</li>
+                    <li>Catatan</li>
+                    <li>Dicatat Oleh</li>
+                </ul>
+                
+                <h6>Data Guru</h6>
+                <ul class="small">
+                    <li>Nama Guru</li>
+                    <li>Tanggal</li>
+                    <li>Jam Masuk</li>
+                    <li>Jam Keluar</li>
+                    <li>Status</li>
+                </ul>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Data akan mencakup seluruh hari dalam bulan yang dipilih.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
