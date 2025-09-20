@@ -6,7 +6,7 @@ from wtforms.widgets import TextArea
 class TeacherForm(FlaskForm):
     full_name = StringField('Nama Lengkap', validators=[DataRequired()])
     nip = StringField('NIP', validators=[DataRequired()])
-    email = StringField('Email (Opsional)', validators=[Optional(), Email()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     is_homeroom = BooleanField('Wali Kelas')  # checkbox saja
     submit = SubmitField('Simpan')
 

@@ -163,7 +163,6 @@
                             <th>Nama Guru</th>
                             <th>Tanggal</th>
                             <th>Jam Masuk</th>
-                            <th>Jam Keluar</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -173,7 +172,6 @@
                             <td>{{ record.teacher.full_name }}</td>
                             <td>{{ record.date.strftime('%d/%m/%Y') }}</td>
                             <td>{{ record.time_in.strftime('%H:%M') if record.time_in else '-' }}</td>
-                            <td>{{ record.time_out.strftime('%H:%M') if record.time_out else '-' }}</td>
                             <td>
                                 <span class="badge 
                                     {% if record.status.value == 'hadir' %}bg-success

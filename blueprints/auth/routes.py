@@ -1,11 +1,19 @@
-from datetime import datetime
+from datetime import datetime as _datetime
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, current_user, login_required
+from sqlalchemy import and_
 from werkzeug.security import generate_password_hash
 from extensions import db
 from models import User, UserRole, School, Teacher, Student
 from . import auth_bp
 from .forms import LoginForm, RegistrationForm, PasswordForm, ProfileForm
+from zoneinfo import ZoneInfo
+
+class datetime(_datetime):
+    @classmethod
+    def now(cls, tz=None):
+        tz = tz or ZoneInfo('Asia/Jakarta')
+        return super().now(tz)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -70,7 +78,10 @@ def profile():
     password_form = PasswordForm()
 
     if profile_form.validate_on_submit() and 'update_profile' in request.form:
-        # Update user fields
+        existing_user = User.query.filter(and_(User.email == profile_form.email.data, User.id != current_user.id)).first()
+        if existing_user:
+            flash('Email sudah digunakan. Silahkan gunakan email lain.', 'danger')
+            return redirect(url_for('auth.profile'))
         current_user.username = profile_form.username.data
         current_user.email = profile_form.email.data
         db.session.commit()

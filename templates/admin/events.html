@@ -115,14 +115,14 @@ document.addEventListener('DOMContentLoaded', function() {
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'id',
-        events: {{ events_json|tojson|safe }},  // PENTING: tojson
+        events: '/admin/events/json',  // PENTING: tojson
         selectable: true,
         select: function(info) {
             document.getElementById('eventForm').reset();
             document.getElementById('modalTitle').innerText = 'Tambah Event';
             document.getElementById('eventId').value = '';
             document.getElementById('start_date').value = info.startStr;
-            document.getElementById('end_date').value = info.endStr.slice(0,-1); // endStr exclusive
+            document.getElementById('end_date').value = info.endStr; // endStr exclusive
             deleteBtn.style.display = 'none';
             modal.show();
         },
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('eventId').value = event.id;
             document.getElementById('title').value = event.title;
             document.getElementById('start_date').value = event.startStr;
-            document.getElementById('end_date').value = event.endStr ? event.endStr.slice(0,-1) : event.startStr;
+            document.getElementById('end_date').value = event.endStr;
             document.getElementById('event_type').value = event.extendedProps.event_type;
             document.getElementById('is_holiday').checked = event.extendedProps.is_holiday;
             deleteBtn.style.display = 'inline-block';
@@ -145,6 +145,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Submit via AJAX
     document.getElementById('eventForm').addEventListener('submit', function(e) {
         e.preventDefault();
+        const title = document.getElementById('title').value.trim();
+        const eventType = document.getElementById('event_type').value;
+
+        // Validasi
+        if (!title) {
+            alert('Judul event wajib diisi!');
+            return;
+        }
+        if (!eventType) {
+            alert('Tipe event wajib dipilih!');
+            return;
+        }
         var formData = new FormData(this);
         formData.append('csrf_token', document.querySelector('[name=csrf_token]').value);
         var eventId = formData.get('event_id');
@@ -165,7 +177,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
     // Delete event
    deleteBtn.addEventListener('click', function(){
     var eventId = document.getElementById('eventId').value;

@@ -105,11 +105,6 @@
             {% endif %}
         </div>
 
-        <div class="mb-3 form-check">
-            {{ form.is_homeroom(class="form-check-input") }}
-            {{ form.is_homeroom.label(class="form-check-label") }}
-        </div>
-
         <button type="submit" class="btn btn-success">
             {{ 'Tambah' if not teacher else 'Simpan Perubahan' }}
         </button>

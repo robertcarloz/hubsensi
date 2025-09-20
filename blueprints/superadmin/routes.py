@@ -1,10 +1,13 @@
-from flask import render_template, redirect, url_for, flash, request
+from random import random
+import string
+from flask import jsonify, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from functools import wraps
 from werkzeug.security import generate_password_hash
 from blueprints import admin
 from extensions import db
 from models import User, UserRole, School, Teacher, Student
+from utils.sendgrid_helper import send_email
 from . import superadmin_bp
 from .forms import AdminRegistrationForm, SchoolForm
 from ..auth.forms import RegistrationForm
@@ -60,7 +63,6 @@ def add_school():
     
     form = SchoolForm()
     admin_form = AdminRegistrationForm()  # Form khusus untuk admin sekolah
-    
     if form.validate_on_submit() and admin_form.validate():
         # Cek apakah kode sekolah sudah ada
         existing_school = School.query.filter_by(code=form.code.data).first()
@@ -68,10 +70,20 @@ def add_school():
             flash('Kode sekolah sudah digunakan. Silakan gunakan kode yang lain.', 'danger')
             return render_template('superadmin/add_school.html', form=form, admin_form=admin_form)
         
+        existing_school_name = School.query.filter_by(name=form.name.data).first()
+        if existing_school_name:
+            flash('Nama sekolah sudah digunakan. Silakan gunakan nama yang lain.', 'danger')
+            return render_template('superadmin/add_school.html', form=form, admin_form=admin_form)
+        
         # Cek apakah username admin sudah ada
         existing_admin = User.query.filter_by(username=admin_form.username.data).first()
         if existing_admin:
             flash('Username admin sudah digunakan. Silakan gunakan username yang lain.', 'danger')
+            return render_template('superadmin/add_school.html', form=form, admin_form=admin_form)
+        
+        existing_email = User.query.filter_by(email=admin_form.email.data).first()
+        if existing_email:
+            flash('Email sudah digunakan. Silahkan gunakan email lain.', 'danger')
             return render_template('superadmin/add_school.html', form=form, admin_form=admin_form)
         
         # Buat sekolah baru
@@ -143,7 +155,6 @@ def delete_school(school_id):
 @require_superadmin
 def add_admin(school_id):
     school = School.query.get_or_404(school_id)
-
     username = request.form.get('username')
     email = request.form.get('email')
     password = request.form.get('password')
@@ -190,3 +201,41 @@ def toggle_school_status(school_id):
 
     status_text = "aktif" if school.is_active else "nonaktif"
     return {"success": True, "message": f"Sekolah berhasil {status_text}kan"}
+
+@superadmin_bp.route('/admins/<int:admin_id>/reset-password', methods=['POST'])
+@require_superadmin
+def reset_password(admin_id):
+    admin = User.query.get_or_404(admin_id)
+    if admin.role != UserRole.ADMIN:
+        flash("User bukan admin, tidak bisa reset password.", "danger")
+        return redirect(url_for('superadmin.edit_school', school_id=admin.school_id))
+
+    # Generate password random
+    import random, string
+    new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+
+    # Update password (hash)
+    admin.set_password(new_password)
+    db.session.commit()
+
+    # Kirim email via SendGrid
+    subject = "Reset Password Akun Admin"
+    body = f"""
+Halo {admin.username},
+
+Password akun Anda telah direset oleh Superadmin.
+Berikut login terbaru Anda:
+
+Username: {admin.username}
+Password: {new_password}
+
+Silakan login dan segera ubah password Anda.
+"""
+
+    try:
+        response = send_email(to_email=admin.email, subject=subject, body=body)
+        flash(f"Password berhasil direset dan dikirim ke email admin (status {response['status_code']}).", "success")
+    except Exception as e:
+        flash(f"Gagal mengirim email: {str(e)}", "danger")
+
+    return redirect(url_for('superadmin.edit_school', school_id=admin.school_id))

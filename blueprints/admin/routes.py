@@ -8,7 +8,7 @@ import qrcode
 import os
 from io import BytesIO
 import base64
-from datetime import date, datetime, timedelta
+from datetime import date, datetime as _datetime, timedelta
 import io
 from extensions import db
 from models import EventType, TeacherAttendance, User, UserRole, School, Teacher, Student, Classroom, SchoolEvent, SchoolQRCode, Attendance
@@ -16,6 +16,13 @@ from . import admin_bp
 from .forms import TeacherForm, StudentForm, ClassroomForm, EventForm, SchoolSettingsForm
 import pandas as pd
 from utils.s3_helper import *
+from zoneinfo import ZoneInfo
+
+class datetime(_datetime):
+    @classmethod
+    def now(cls, tz=None):
+        tz = tz or ZoneInfo('Asia/Jakarta')
+        return super().now(tz)
 
 def require_admin(f):
     @wraps(f)
@@ -126,10 +133,13 @@ def add_teacher():
             nip=form.nip.data,
             school_id=current_user.school_id
         ).first()
+        existing_email = User.query.filter_by(email=form.email.data).first()
         if existing_teacher:
             flash(f'NIP {form.nip.data} sudah digunakan oleh {existing_teacher.full_name}!', 'danger')
             return render_template('admin/add_teacher.html', form=form)
-        
+        if existing_email:
+            flash(f'Email {form.email.data} sudah digunakan!', 'danger')
+            return render_template('admin/add_teacher.html', form=form)
         import secrets
         password = secrets.token_urlsafe(8)
 
@@ -150,7 +160,7 @@ def add_teacher():
             user_id=user.id,
             full_name=form.full_name.data,
             nip=form.nip.data,
-            is_homeroom=form.is_homeroom.data
+            is_homeroom=False
         )
         db.session.add(teacher)
         db.session.commit()
@@ -208,7 +218,7 @@ def edit_teacher(teacher_id):
         # Update teacher fields
         teacher.full_name = form.full_name.data
         teacher.nip = form.nip.data
-        teacher.is_homeroom = form.is_homeroom.data
+        teacher.is_homeroom = teacher.is_homeroom
 
         # Update user username dan email
         user.username = form.nip.data
@@ -348,6 +358,7 @@ Silakan login di {url_for('auth.login', _external=True)}
 def edit_student(student_id):
     student = Student.query.get_or_404(student_id)
     form = StudentForm(obj=student)
+    form.email.data = student.user.email if student.user else ''
 
     # Populate classroom choices
     form.classroom_id.choices = [(0, '-- Pilih Kelas --')] + [
@@ -803,8 +814,7 @@ def attendance_export():
                 'Kelas': record.classroom.name,
                 'Tanggal': record.date.strftime('%d/%m/%Y'),
                 'Status': record.status.value.title(),
-                'Catatan': record.notes or '',
-                'Dicatat Oleh': record.teacher.full_name if record.teacher else ''
+                'Catatan': record.notes or ''
             })
         
         # Create DataFrame
@@ -848,7 +858,6 @@ def attendance_export():
                 'Nama Guru': record.teacher.full_name,
                 'Tanggal': record.date.strftime('%d/%m/%Y'),
                 'Jam Masuk': record.time_in.strftime('%H:%M') if record.time_in else '',
-                'Jam Keluar': record.time_out.strftime('%H:%M') if record.time_out else '',
                 'Status': record.status.value.title()
             })
         
@@ -904,7 +913,22 @@ def events():
     form = EventForm()
     return render_template('admin/events.html', events_json=events_json, form=form)
 
-
+@admin_bp.route('/events/json')
+@require_admin
+def events_json():
+    events = SchoolEvent.query.filter_by(school_id=current_user.school_id).all()
+    return jsonify([
+        {
+            "id": event.id,
+            "title": event.title,
+            "start": event.start_date.isoformat(),
+            "end": event.end_date.isoformat(),
+            "allDay": True,
+            "event_type": event.event_type.value,
+            "is_holiday": event.is_holiday
+        } 
+        for event in events
+    ])
 
 @admin_bp.route('/events/add', methods=['POST'])
 @require_admin
@@ -916,12 +940,16 @@ def add_event():
     is_holiday = request.form.get('is_holiday') == 'on'
 
     if title and start_date and end_date:
+        # Tambah 1 hari supaya FullCalendar tampil benar
+        start_dt = datetime.fromisoformat(start_date)
+        end_dt = datetime.fromisoformat(end_date) + timedelta(days=1)
+
         event = SchoolEvent(
             school_id=current_user.school_id,
             title=title,
             description='',
-            start_date=datetime.fromisoformat(start_date),
-            end_date=datetime.fromisoformat(end_date),
+            start_date=start_dt,
+            end_date=end_dt,
             event_type=EventType(event_type_str.upper()),
             is_holiday=is_holiday
         )
@@ -944,7 +972,7 @@ def edit_event(event_id):
     if title and start_date and end_date:
         event.title = title
         event.start_date = datetime.fromisoformat(start_date)
-        event.end_date = datetime.fromisoformat(end_date)
+        event.end_date = datetime.fromisoformat(end_date)+timedelta(days=1)  # Tambah 1 hari supaya FullCalendar tampil benar
         event_type=EventType(event_type_str.upper())
         event.is_holiday = is_holiday
         db.session.commit()

@@ -174,20 +174,23 @@
 <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="resetPasswordModalLabel">Reset Password Admin</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Apakah Anda yakin ingin mereset password untuk admin <strong>{{ admin.username }}</strong>?</p>
-                <p>Password baru akan dikirimkan ke email <strong>{{ admin.email }}</strong>.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-primary" onclick="resetAdminPassword({{ admin.id }})">
-                    <i class="bi bi-key me-1"></i> Reset Password
-                </button>
-            </div>
+            <form action="{{ url_for('superadmin.reset_password', admin_id=admin.id) }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resetPasswordModalLabel">Reset Password Admin</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin mereset password untuk admin <strong>{{ admin.username }}</strong>?</p>
+                    <p>Password baru akan dikirimkan ke email <strong>{{ admin.email }}</strong>.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-key me-1"></i> Reset Password
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
