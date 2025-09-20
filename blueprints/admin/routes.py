@@ -814,7 +814,8 @@ def attendance_export():
                 'Kelas': record.classroom.name,
                 'Tanggal': record.date.strftime('%d/%m/%Y'),
                 'Status': record.status.value.title(),
-                'Catatan': record.notes or ''
+                'Catatan': record.notes or '',
+                'Dicatat Oleh': record.teacher.full_name if record.teacher else ''
             })
         
         # Create DataFrame
