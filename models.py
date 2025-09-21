@@ -34,8 +34,8 @@ class EventType(enum.Enum):
 class BaseModel(db.Model):
     __abstract__ = True
     id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=jakarta_now)
+    updated_at = db.Column(db.DateTime, default=jakarta_now, onupdate=jakarta_now)
 
 # Model untuk sekolah/tenant
 class School(BaseModel):
@@ -100,7 +100,7 @@ class Teacher(BaseModel):
     
     # Relationship
     homeroom_class = db.relationship('Classroom', backref='homeroom_teacher', uselist=False)
-    recorded_attendances = db.relationship('Attendance', backref='teacher', lazy=True)
+    recorded_attendances = db.relationship('Attendance', backref='teacher', lazy=True,  cascade="all, delete-orphan")
 
 # Model untuk siswa
 class Student(BaseModel):
@@ -115,7 +115,7 @@ class Student(BaseModel):
     qr_code = db.Column(db.String(100), unique=True)  # Path to QR code image
     
     # Relationship
-    attendance_records = db.relationship('Attendance', backref='student', lazy=True)
+    attendance_records = db.relationship('Attendance', backref='student', lazy=True,  cascade="all, delete-orphan")
 
 # Model untuk kelas
 class Classroom(BaseModel):
