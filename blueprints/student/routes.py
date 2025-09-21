@@ -1,6 +1,7 @@
 from flask import render_template, redirect, request, url_for, flash, send_file
 from flask_login import login_required, current_user
-from datetime import datetime, timedelta
+from utils.timezone import datetime
+from datetime import timedelta
 from extensions import db
 from models import User, UserRole, Student, Attendance
 from . import student_bp

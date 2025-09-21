@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block sidebar_nav %}
 <li class="nav-item">
-    <a class="nav-link active" href="{{ url_for('student.dashboard') }}">
+    <a class="nav-link" href="{{ url_for('student.dashboard') }}">
         <i class="bi bi-speedometer2 me-2"></i> Dashboard
     </a>
 </li>
@@ -11,7 +11,7 @@
     </a>
 </li>
 <li class="nav-item">
-    <a class="nav-link" href="{{ url_for('student.attendance') }}">
+    <a class="nav-link active" href="{{ url_for('student.attendance') }}">
         <i class="bi bi-graph-up me-2"></i> Absensi
     </a>
 </li>

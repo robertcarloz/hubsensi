@@ -415,5 +415,22 @@
         printWindow.print();
         printWindow.close();
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+    const usernameInput = document.getElementById('username');
+    if (usernameInput) {
+        const feedback = document.createElement('div');
+        feedback.className = 'text-danger small mt-1';
+        usernameInput.parentNode.appendChild(feedback);
+
+        usernameInput.addEventListener('input', function() {
+            if (this.value.length > 0 && this.value.length < 4) {
+                feedback.textContent = 'Username minimal 4 karakter';
+            } else {
+                feedback.textContent = '';
+            }
+        });
+    }
+});
 </script>
 {% endblock %}

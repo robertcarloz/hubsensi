@@ -1,17 +1,11 @@
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from datetime import datetime as _datetime
-from zoneinfo import ZoneInfo
+from utils.timezone import datetime
 from extensions import db
 from models import AttendanceStatus, SchoolEvent, TeacherAttendance, User, UserRole, Teacher, Student, Classroom, Attendance, SchoolQRCode
 from . import teacher_bp
 from .forms import AttendanceForm
 import re
-class datetime(_datetime):
-    @classmethod
-    def now(cls, tz=None):
-        tz = tz or ZoneInfo('Asia/Jakarta')
-        return super().now(tz)
     
 @teacher_bp.before_request
 @login_required

@@ -8,7 +8,8 @@ import qrcode
 import os
 from io import BytesIO
 import base64
-from datetime import date, datetime as _datetime, timedelta
+from datetime import date, timedelta
+from utils.timezone import datetime
 import io
 from extensions import db
 from models import EventType, TeacherAttendance, User, UserRole, School, Teacher, Student, Classroom, SchoolEvent, SchoolQRCode, Attendance
@@ -16,13 +17,6 @@ from . import admin_bp
 from .forms import TeacherForm, StudentForm, ClassroomForm, EventForm, SchoolSettingsForm
 import pandas as pd
 from utils.s3_helper import *
-from zoneinfo import ZoneInfo
-
-class datetime(_datetime):
-    @classmethod
-    def now(cls, tz=None):
-        tz = tz or ZoneInfo('Asia/Jakarta')
-        return super().now(tz)
 
 def require_admin(f):
     @wraps(f)
@@ -478,6 +472,7 @@ def import_students():
                 nis = str(row['nis']).strip()
                 full_name = str(row['full_name']).strip()
                 email = str(row['email']).strip() if pd.notna(row['email']) and str(row['email']).strip() else f"student_{nis}@school{current_user.school_id}.local"
+                nisn = str(row['nisn']).strip() if 'nisn' in df.columns and pd.notna(row['nisn']) else None
 
                 # Cek NIS unik
                 existing_student = Student.query.filter_by(nis=nis, school_id=current_user.school_id).first()
@@ -531,6 +526,7 @@ def import_students():
                     school_id=current_user.school_id,
                     user_id=user.id,
                     nis=nis,
+                    nisn=nisn,
                     full_name=full_name,
                     classroom_id=classroom_id if classroom_id else None,
                     qr_code=qr_s3_url
@@ -607,8 +603,7 @@ def download_template():
         'nis': ['S001', 'S002', 'S003'],
         'nisn': ['NISN001', 'NISN002', 'NISN003'],
         'full_name': ['Nama Siswa 1', 'Nama Siswa 2', 'Nama Siswa 3'],
-        'email': ['siswa1@example.com', 'siswa2@example.com', 'siswa3@example.com'],
-        'classroom': ['Kelas A', 'Kelas B', 'Kelas C']
+        'email': ['siswa1@example.com', 'siswa2@example.com', 'siswa3@example.com']
     }
     df = pd.DataFrame(data)
     output = BytesIO()
