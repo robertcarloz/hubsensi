@@ -6,7 +6,7 @@ from config import Config
 from extensions import db, login_manager, migrate, csrf
 from models import User, UserRole
 from blueprints import init_app as init_blueprints
-from datetime import datetime
+from utils.timezone import datetime
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -68,7 +68,7 @@ def create_app(config_class=Config):
     
     @app.context_processor
     def inject_now():
-        return {'now': datetime.utcnow()} 
+        return {'now': datetime.now()} 
     @app.before_request
     def check_subscription():
         # Skip untuk superadmin dan routes tertentu
