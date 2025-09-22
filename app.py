@@ -4,9 +4,8 @@ from flask import Flask, abort, flash, jsonify, redirect, render_template, reque
 from flask_login import current_user, logout_user
 from config import Config
 from extensions import db, login_manager, migrate, csrf
-from models import User, UserRole
+from models import User, UserRole, jakarta_now
 from blueprints import init_app as init_blueprints
-from utils.timezone import datetime
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -68,7 +67,7 @@ def create_app(config_class=Config):
     
     @app.context_processor
     def inject_now():
-        return {'now': datetime.now()} 
+        return {'now': jakarta_now()} 
     @app.before_request
     def check_subscription():
         # Skip untuk superadmin dan routes tertentu

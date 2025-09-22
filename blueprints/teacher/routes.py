@@ -1,8 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from utils.timezone import datetime
+from models import AttendanceStatus, SchoolEvent, TeacherAttendance, User, UserRole, Teacher, Student, Classroom, Attendance, SchoolQRCode, jakarta_now
 from extensions import db
-from models import AttendanceStatus, SchoolEvent, TeacherAttendance, User, UserRole, Teacher, Student, Classroom, Attendance, SchoolQRCode
 from . import teacher_bp
 from .forms import AttendanceForm
 import re
@@ -23,7 +22,7 @@ def dashboard():
     if teacher and teacher.is_homeroom:
         homeroom_class = Classroom.query.filter_by(homeroom_teacher_id=teacher.id).first()
     
-    today = datetime.now().date()
+    today = jakarta_now().date()
 
     # Upcoming events khusus sekolah
     upcoming_events = SchoolEvent.query.filter(
@@ -65,13 +64,14 @@ def dashboard():
 @teacher_bp.route('/attendance', methods=['GET', 'POST'])
 def attendance():
     # Get filter parameters
-    date_str = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
+    date_str = request.args.get('date', jakarta_now().strftime('%Y-%m-%d'))
     classroom_id = request.args.get('classroom_id', type=int)
     
     try:
+        from datetime import datetime
         date = datetime.strptime(date_str, '%Y-%m-%d').date()
     except ValueError:
-        date = datetime.now().date()
+        date = jakarta_now().date()
     
     # Format display date
     selected_date_display = date.strftime('%d %B %Y')
@@ -115,6 +115,7 @@ def attendance():
         form_classroom_id = request.form.get('classroom_id', type=int)
         
         try:
+            from datetime import datetime
             form_date = datetime.strptime(form_date_str, '%Y-%m-%d').date()
         except ValueError:
             form_date = date
@@ -180,7 +181,7 @@ def record_attendance(student_id):
         teacher = Teacher.query.filter_by(user_id=current_user.id).first()
         
         # Check if attendance already exists for today
-        today = datetime.now().date()
+        today = jakarta_now().date()
         attendance = Attendance.query.filter_by(
             student_id=student_id,
             date=today
@@ -330,7 +331,7 @@ def process_student_qr(qr_info, teacher, status='hadir', notes=''):
             })
         
         # Get today's date
-        today = datetime.now().date()
+        today = jakarta_now().date()
         
         # Check if attendance already exists for today
         existing_attendance = Attendance.query.filter_by(
@@ -344,7 +345,7 @@ def process_student_qr(qr_info, teacher, status='hadir', notes=''):
                 old_status = existing_attendance.status.value
                 existing_attendance.status = AttendanceStatus(status)
                 existing_attendance.recorded_by = teacher.id
-                existing_attendance.updated_at = datetime.now()
+                existing_attendance.updated_at = jakarta_now()
                 
                 if notes:
                     existing_attendance.notes = notes
@@ -359,7 +360,7 @@ def process_student_qr(qr_info, teacher, status='hadir', notes=''):
                     'status': status,
                     'classroom': student.classroom.name if student.classroom else 'Belum ada kelas',
                     'updated': True,
-                    'timestamp': datetime.now().strftime('%H:%M:%S')
+                    'timestamp': jakarta_now().strftime('%H:%M:%S')
                 })
             else:
                 return jsonify({
@@ -395,7 +396,7 @@ def process_student_qr(qr_info, teacher, status='hadir', notes=''):
                 'status': status,
                 'classroom': student.classroom.name if student.classroom else 'Belum ada kelas',
                 'already_recorded': False,
-                'timestamp': datetime.now().strftime('%H:%M:%S')
+                'timestamp': jakarta_now().strftime('%H:%M:%S')
             })
     
     except Exception as e:
@@ -408,7 +409,7 @@ def process_student_qr(qr_info, teacher, status='hadir', notes=''):
 def process_school_qr(qr_info, teacher):
     """Process school QR code for teacher attendance"""
     try:
-        today = datetime.now().date()
+        today = jakarta_now().date()
         
         # Check if teacher attendance already exists for today
         existing_attendance = TeacherAttendance.query.filter_by(
@@ -431,7 +432,7 @@ def process_school_qr(qr_info, teacher):
                 school_id=current_user.school_id,
                 date=today,
                 status=AttendanceStatus.HADIR,
-                time_in=datetime.now(),
+                time_in=jakarta_now(),
                 time_out=None
             )
             
@@ -444,7 +445,7 @@ def process_school_qr(qr_info, teacher):
                 'teacher_name': teacher.full_name,
                 'status': 'hadir',
                 'already_recorded': False,
-                'timestamp': datetime.now().strftime('%H:%M:%S')
+                'timestamp': jakarta_now().strftime('%H:%M:%S')
             })
     
     except Exception as e:
@@ -511,11 +512,12 @@ def my_attendance():
     
     # Default to current month if no dates provided
     if not start_date or not end_date:
-        today = datetime.now().date()
+        today = jakarta_now().date()
         start_date = today.replace(day=1)
         end_date = today
     else:
         try:
+            from datetime import datetime
             start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
             end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
         except ValueError:
@@ -552,7 +554,7 @@ def my_attendance():
         records=records,
         start_date=start_date.strftime('%Y-%m-%d'),
         end_date=end_date.strftime('%Y-%m-%d'),
-        current_year=datetime.now().year
+        current_year=jakarta_now().year
     )
 
 @teacher_bp.route('/attendance/bulk', methods=['POST'])
@@ -568,7 +570,7 @@ def bulk_attendance():
         if not teacher:
             return jsonify({'success': False, 'message': 'Data guru tidak ditemukan'})
         
-        today = datetime.now().date()
+        today = jakarta_now().date()
         processed = 0
         errors = []
         
@@ -597,7 +599,7 @@ def bulk_attendance():
                     existing.status = AttendanceStatus(status)
                     existing.notes = notes
                     existing.recorded_by = teacher.id
-                    existing.updated_at = datetime.now()
+                    existing.updated_at = jakarta_now()
                 else:
                     attendance = Attendance(
                         school_id=current_user.school_id,
