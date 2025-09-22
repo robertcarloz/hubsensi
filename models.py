@@ -198,9 +198,9 @@ class SchoolSubscription(db.Model):
     school = db.relationship('School', backref=db.backref('subscription', uselist=False))
     
     def is_valid(self):
-        return self.is_active and datetime.now().date() <= self.end_date
+        return self.is_active and jakarta_now().date() <= self.end_date
     
     def days_remaining(self):
         if not self.is_valid():
             return 0
-        return (self.end_date - datetime.now().date()).days
+        return (self.end_date - jakarta_now().date()).days

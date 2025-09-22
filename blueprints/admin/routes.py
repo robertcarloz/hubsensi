@@ -9,10 +9,9 @@ import os
 from io import BytesIO
 import base64
 from datetime import date, timedelta
-from utils.timezone import datetime
+from models import EventType, TeacherAttendance, User, UserRole, School, Teacher, Student, Classroom, SchoolEvent, SchoolQRCode, Attendance, jakarta_now
 import io
 from extensions import db
-from models import EventType, TeacherAttendance, User, UserRole, School, Teacher, Student, Classroom, SchoolEvent, SchoolQRCode, Attendance
 from . import admin_bp
 from .forms import TeacherForm, StudentForm, ClassroomForm, EventForm, SchoolSettingsForm
 import pandas as pd
@@ -35,7 +34,7 @@ def dashboard():
     student_count = Student.query.filter_by(school_id=current_user.school_id).count()
     classroom_count = Classroom.query.filter_by(school_id=current_user.school_id).count()
     
-    today = datetime.now().date()
+    today = jakarta_now().date()
     today_attendance_records = Attendance.query.filter(
         Attendance.school_id == current_user.school_id,
         Attendance.date == today
@@ -92,6 +91,7 @@ def dashboard():
         })
 
     # Sort berdasarkan waktu terbaru
+    from datetime import datetime
     recent_activities.sort(key=lambda x: datetime.strptime(x['time'], '%H:%M %d/%m/%Y'), reverse=True)
     # Get recent teachers and students
     recent_teachers = Teacher.query.filter_by(school_id=current_user.school_id).order_by(Teacher.created_at.desc()).limit(5).all()
@@ -718,13 +718,14 @@ def edit_classroom(classroom_id):
 @require_admin
 def attendance():
     # Get attendance by date and class
-    date_str = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
+    date_str = request.args.get('date', jakarta_now().strftime('%Y-%m-%d'))
     classroom_id = request.args.get('classroom_id', type=int)
     
     try:
+        from datetime import datetime
         date = datetime.strptime(date_str, '%Y-%m-%d').date()
     except ValueError:
-        date = datetime.now().date()
+        date = jakarta_now().date()
     
     # Get classrooms for filter
     classrooms = Classroom.query.filter_by(school_id=current_user.school_id).all()
@@ -759,7 +760,7 @@ def attendance_export_form():
     # Get classrooms for filter
     classrooms = Classroom.query.filter_by(school_id=current_user.school_id).all()
     
-    current_date = datetime.now()
+    current_date = jakarta_now()
     
     return render_template('admin/ekspor_absensi.html',
                          classrooms=classrooms,
@@ -771,15 +772,15 @@ def attendance_export_form():
 def attendance_export():
     # Get parameters
     export_type = request.args.get('export_type', 'student')
-    month = request.args.get('month', type=int, default=datetime.now().month)
-    year = request.args.get('year', type=int, default=datetime.now().year)
+    month = request.args.get('month', type=int, default=jakarta_now().month)
+    year = request.args.get('year', type=int, default=jakarta_now().year)
     classroom_id = request.args.get('classroom_id', type=int)
     
     # Validate month and year
     if not (1 <= month <= 12):
-        month = datetime.now().month
+        month = jakarta_now().month
     if year < 2000 or year > 2100:
-        year = datetime.now().year
+        year = jakarta_now().year
     
     # Calculate date range for the month
     start_date = date(year, month, 1)
@@ -937,6 +938,7 @@ def add_event():
 
     if title and start_date and end_date:
         # Tambah 1 hari supaya FullCalendar tampil benar
+        from datetime import datetime
         start_dt = datetime.fromisoformat(start_date)
         end_dt = datetime.fromisoformat(end_date) + timedelta(days=1)
 
@@ -966,6 +968,7 @@ def edit_event(event_id):
     is_holiday = request.form.get('is_holiday') == 'on'
 
     if title and start_date and end_date:
+        from datetime import datetime
         event.title = title
         event.start_date = datetime.fromisoformat(start_date)
         event.end_date = datetime.fromisoformat(end_date)+timedelta(days=1)  # Tambah 1 hari supaya FullCalendar tampil benar
