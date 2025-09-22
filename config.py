@@ -16,6 +16,10 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_recycle': 300,
         'pool_pre_ping': True,
+        # Add timezone configuration for PostgreSQL
+        'connect_args': {
+            'options': '-c timezone=Asia/Jakarta'
+        }
     }
     
     # Session config
