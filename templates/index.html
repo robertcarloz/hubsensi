@@ -1,401 +1,681 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hubsensi - Transformasi Digital untuk Sekolah</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Reset & Basic Setup */
+        :root {
+            --primary-green-dark: #015240;
+            --primary-green: #00684B;
+            --secondary-green: #0A9B73;
+            --accent-lime: #d4ff00;
+            --text-dark: #003C2B;
+            --text-light: #555;
+            --bg-light: #FFFFFF;
+            --border-color: #E0E0E0;
+        }
 
-{% block title %}HubSensi - Sistem Absensi Multi-Sekolah{% endblock %}
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
 
-{% block content %}
-<!-- Hero Section -->
-<section class="hero-section bg-primary text-white py-5">
-    <div class="container py-5">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">HubSensi</h1>
-                <p class="lead mb-4">Sistem Absensi Modern untuk Sekolah dengan Teknologi QR Code</p>
-                <p class="mb-5">Kelola kehadiran siswa dan guru dengan mudah, efisien, dan terintegrasi dalam satu platform.</p>
-                
-                {% if not current_user.is_authenticated %}
-                <div class="d-flex flex-wrap gap-3">
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-lg px-4 py-2">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>Login ke Sistem
-                    </a>
-                    <a href="#features" class="btn btn-outline-light btn-lg px-4 py-2">
-                        <i class="bi bi-info-circle me-2"></i>Pelajari Lebih Lanjut
-                    </a>
-                </div>
-                {% else %}
-                <div class="d-flex flex-wrap gap-3">
-                    <a href="
-                        {% if current_user.role.value == 'superadmin' %}
-                            {{ url_for('superadmin.dashboard') }}
-                        {% elif current_user.role.value == 'admin' %}
-                            {{ url_for('admin.dashboard') }}
-                        {% elif current_user.role.value == 'teacher' %}
-                            {{ url_for('teacher.dashboard') }}
-                        {% elif current_user.role.value == 'student' %}
-                            {{ url_for('student.dashboard') }}
-                        {% endif %}" 
-                       class="btn btn-light btn-lg px-4 py-2">
-                        <i class="bi bi-speedometer2 me-2"></i>Dashboard Saya
-                    </a>
-                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-lg px-4 py-2">
-                        <i class="bi bi-box-arrow-right me-2"></i>Logout
-                    </a>
-                </div>
-                {% endif %}
-            </div>
-            <div class="col-lg-6 text-center">
-                <img src="{{ url_for('static', filename='img/dashboard-preview.png') }}" 
-                     alt="Dashboard Preview" class="img-fluid rounded shadow" 
-                     onerror="this.src='https://via.placeholder.com/600x400/0d6efd/ffffff?text=Dashboard+Preview'">
-            </div>
-        </div>
-    </div>
-</section>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            color: var(--text-dark);
+            /* Gradasi disempurnakan agar sesuai gambar */
+            background: linear-gradient(135deg, var(--primary-green-dark) 0%, var(--primary-green) 30%, #a8e063 85%, var(--accent-lime) 100%);
+            background-attachment: fixed; /* Membuat gradasi tetap saat scroll */
+            overflow-x: hidden;
+        }
 
-<!-- Features Section -->
-<section id="features" class="py-5">
-    <div class="container py-5">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold mb-3">Fitur Unggulan</h2>
-            <p class="lead text-muted">Solusi lengkap untuk manajemen absensi sekolah</p>
-        </div>
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        section {
+            padding: 70px 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Header */
+        header {
+            padding: 20px 0;
+            background-color: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
         
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
-                             style="width: 70px; height: 70px;">
-                            <i class="bi bi-qr-code-scan fs-2"></i>
-                        </div>
-                        <h4 class="card-title">Absensi QR Code</h4>
-                        <p class="card-text">Absensi cepat dan akurat dengan pemindaian QR Code untuk siswa dan guru.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
-                             style="width: 70px; height: 70px;">
-                            <i class="bi bi-building fs-2"></i>
-                        </div>
-                        <h4 class="card-title">Multi-Sekolah</h4>
-                        <p class="card-text">Dukungan untuk banyak sekolah dalam satu platform dengan data terisolasi.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-info bg-opacity-10 text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
-                             style="width: 70px; height: 70px;">
-                            <i class="bi bi-graph-up fs-2"></i>
-                        </div>
-                        <h4 class="card-title">Laporan Real-time</h4>
-                        <p class="card-text">Pantau data kehadiran dengan dashboard interaktif dan laporan detail.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
-                             style="width: 70px; height: 70px;">
-                            <i class="bi bi-calendar-event fs-2"></i>
-                        </div>
-                        <h4 class="card-title">Kalender Akademik</h4>
-                        <p class="card-text">Kelola jadwal akademik, event sekolah, dan hari libur dalam satu kalender.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-<!-- How It Works Section -->
-<section class="bg-light py-5">
-    <div class="container py-5">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold mb-3">Cara Kerja</h2>
-            <p class="lead text-muted">Sistem absensi yang sederhana namun powerful</p>
-        </div>
+        .logo img {
+            height: 60px;
+            width: auto;
+        }
+
+        .login-btn {
+            background-color: transparent;
+            border: 1px solid var(--bg-light);
+            color: var(--bg-light);
+            padding: 8px 24px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background-color: var(--bg-light);
+            color: var(--primary-green);
+        }
+
+        /* --- ANIMASI BARU UNTUK HERO SECTION --- */
+        .hero {
+            text-align: center;
+            padding: 140px 0;
+            color: var(--bg-light);
+        }
         
-        <div class="row align-items-center">
-            <div class="col-lg-6 order-lg-2 mb-4 mb-lg-0">
-                <img src="{{ url_for('static', filename='img/qr-scan-demo.png') }}" 
-                     alt="QR Scan Demo" class="img-fluid rounded shadow" 
-                     onerror="this.src='https://via.placeholder.com/600x400/6c757d/ffffff?text=QR+Scan+Demo'">
-            </div>
-            <div class="col-lg-6 order-lg-1">
-                <div class="mb-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
-                             style="width: 40px; height: 40px;">1</div>
-                        <h4 class="mb-0">Generate QR Code</h4>
-                    </div>
-                    <p>Admin sekolah menghasilkan QR Code unik untuk setiap siswa dan guru.</p>
-                </div>
-                
-                <div class="mb-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
-                             style="width: 40px; height: 40px;">2</div>
-                        <h4 class="mb-0">Scan untuk Absensi</h4>
-                    </div>
-                    <p>Siswa dan guru melakukan absensi dengan memindai QR Code menggunakan perangkat guru.</p>
-                </div>
-                
-                <div class="mb-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
-                             style="width: 40px; height: 40px;">3</div>
-                        <h4 class="mb-0">Data Terekam Otomatis</h4>
-                    </div>
-                    <p>Data kehadiran langsung terekam di sistem dan dapat diakses secara real-time.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-<!-- Pricing Section (Optional) -->
-<section class="py-5">
-    <div class="container py-5">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold mb-3">Paket Layanan</h2>
-            <p class="lead text-muted">Pilih paket yang sesuai dengan kebutuhan sekolah Anda</p>
-        </div>
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: white; }
+        }
         
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-header bg-light text-center py-4">
-                        <h4 class="card-title mb-0">Paket Dasar</h4>
-                    </div>
-                    <div class="card-body p-4 text-center">
-                        <h3 class="fw-bold text-primary">Rp 299.000</h3>
-                        <p class="text-muted">/bulan</p>
-                        
-                        <ul class="list-unstyled mb-4">
-                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Hingga 200 siswa</li>
-                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>10 guru/staff</li>
-                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Absensi QR Code</li>
-                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Laporan dasar</li>
-                            <li class="mb-2"><i class="bi bi-x-circle text-muted me-2"></i>Support prioritas</li>
-                        </ul>
-                        
-                        <button class="btn btn-outline-primary w-100" disabled>Hubungi Admin</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="card h-100 border-primary shadow">
-                    <div class="card-header bg-primary text-white text-center py-4 position-relative">
-                        <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-warning text-dark">Populer</span>
-                        <h4 class="card-title mb-0">Paket Standar</h4>
-                    </div>
-                    <div class="card-body p-4 text-center">
-                        <h3 class="fw-bold text-primary">Rp 599.000</h3>
-                        <p class="text-muted">/bulan</p>
-                        
-                        <ul class="list-unstyled mb-4">
-                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Hingga 500 siswa</li>
-                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>25 guru/staff</li>
-                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Absensi QR Code</li>
-                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Laporan lengkap</li>
-                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Support prioritas</li>
-                        </ul>
-                        
-                        <button class="btn btn-primary w-100" disabled>Hubungi Admin</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-header bg-light text-center py-4">
-                        <h4 class="card-title mb-0">Paket Premium</h4>
-                    </div>
-                    <div class="card-body p-4 text-center">
-                        <h3 class="fw-bold text-primary">Rp 999.000</h3>
-                        <p class="text-muted">/bulan</p>
-                        
-                        <ul class="list-unstyled mb-4">
-                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> siswa tidak terbatas</li>
-                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Guru/staff tidak terbatas</li>
-                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Absensi QR Code</li>
-                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Laporan analitik lengkap</li>
-                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Support 24/7</li>
-                        </ul>
-                        
-                        <button class="btn btn-outline-primary w-100" disabled>Hubungi Admin</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            /* Animasi Fade In */
+            opacity: 0; /* Sembunyikan di awal */
+            animation: fadeInUp 0.8s ease-out 0.5s forwards;
+        }
+
+        .hero h1 span {
+            display: block;
+        }
+
+        .hero p {
+            font-size: 16px;
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            line-height: 1.7;
+            opacity: 0; /* Sembunyikan di awal */
+            animation: fadeInUp 0.8s ease-out 0.5s forwards;
+        }
+
+        .hero-btn {
+            background-color: var(--bg-light);
+            color: var(--primary-green);
+            padding: 12px 30px;
+            border-radius: 25px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            /* Animasi Fade In, muncul setelah typing selesai */
+            opacity: 0; /* Sembunyikan di awal */
+            animation: fadeInUp 0.8s ease-out 0.5s forwards;
+        }
+
+        .hero-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Main Content Styling */
+        .content-wrapper {
+            background-color: var(--bg-light);
+            border-radius: 40px 40px 0 0;
+            padding-top: 1px; /* Fix margin collapse */
+            margin-top: -30px;
+            position: relative;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-light);
+            max-width: 500px;
+            margin: 0 auto 60px auto;
+            line-height: 1.6;
+        }
+
+       /* Attendance Section */
+.attendance {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap; /* biar responsif */
+}
+
+.attendance-img {
+    flex: 0 0 600px;
+    text-align: center;
+}
+
+.attendance-img img {
+    max-width: 100%;
+    filter: drop-shadow(0 10px 30px rgba(0,90,60,0.15));
+    transition: transform 0.5s ease;
+    border-radius: 30px;
+}
+
+.attendance-img:hover img {
+    transform: scale(1.05) translateY(-5px);
+}
+
+.attendance-text {
+    flex: 1;
+    max-width: 280px;
+    font-size: 25px;
+    line-height: 1.6;
+    color: var(--text-dark);
+}
+
+.attendance-text ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.attendance-text li {
+    position: relative;
+    padding-left: 28px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.attendance-text li::before {
+    content: '✓';
+    color: var(--secondary-green);
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* Versi kiri */
+.attendance-text.left {
+    text-align: right;
+    padding-right: 10px;
+}
+
+.attendance-text.left li {
+    padding-left: 0;
+    padding-right: 28px;
+}
+
+.attendance-text.left li::before {
+    left: auto;
+    right: 0;
+}
+
+
+        /* How It Works Section */
+        .how-it-works .steps {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            gap: 30px;
+        }
+
+        .step {
+            max-width: 280px;
+        }
+
+        .step-icon {
+            background-color: #E6F5F1;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            border: 2px solid var(--secondary-green);
+            transition: all 0.3s ease;
+        }
+
+        .step-icon img {
+            height: 120px;
+        }
+
+        .step:hover .step-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 5px 20px rgba(10, 155, 115, 0.2);
+        }
+
+        .step h3 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
         
-        <div class="text-center mt-4">
-            <p class="text-muted">
-                <i class="bi bi-info-circle me-1"></i>
-                Untuk informasi lebih lanjut tentang paket layanan, hubungi administrator sistem.
-            </p>
-        </div>
-    </div>
-</section>
+        .step p {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
 
-<!-- FAQ Section -->
-<section class="bg-light py-5">
-    <div class="container py-5">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold mb-3">Pertanyaan Umum</h2>
-            <p class="lead text-muted">Temukan jawaban atas pertanyaan yang sering diajukan</p>
-        </div>
+        /* Pricing Section */
+        .pricing-plans {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .plan {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            width: 320px;
+            transition: all 0.3s ease;
+        }
+
+        .plan:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .plan.highlight {
+            border: 2px solid var(--secondary-green);
+            transform: scale(1.05);
+            position: relative;
+        }
+
+        .plan-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--secondary-green);
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .plan h3 {
+            font-size: 22px;
+            color: var(--secondary-green);
+        }
+
+        .plan .price {
+            font-size: 40px;
+            font-weight: 700;
+            margin: 10px 0;
+            color: var(--text-dark);
+        }
+
+        .plan .price span {
+            font-size: 16px;
+            font-weight: normal;
+            color: var(--text-light);
+        }
+
+        .plan ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+            text-align: left;
+            color: var(--text-light);
+        }
+
+        .plan ul li {
+            margin-bottom: 12px;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .plan ul li::before {
+            content: '✓';
+            color: var(--secondary-green);
+            position: absolute;
+            left: 0;
+        }
         
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="accordion" id="faqAccordion">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                Bagaimana cara mendaftarkan sekolah saya?
-                            </button>
-                        </h2>
-                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                Pendaftaran sekolah hanya dapat dilakukan oleh Super Admin sistem. Hubungi administrator untuk informasi lebih lanjut tentang proses pendaftaran dan aktivasi sekolah.
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                Apakah data sekolah saya aman?
-                            </button>
-                        </h2>
-                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                Ya, data setiap sekolah diisolasi secara ketat dengan sistem multi-tenant. Data sekolah Anda hanya dapat diakses oleh administrator sekolah yang berwenang.
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                                Bagaimana cara kerja absensi QR Code?
-                            </button>
-                        </h2>
-                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                Setiap siswa dan guru memiliki QR Code unik. Untuk absensi, guru memindai QR Code menggunakan perangkat mereka, dan sistem akan mencatat kehadiran secara otomatis.
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
-                                Apakah perlu instalasi khusus?
-                            </button>
-                        </h2>
-                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                Tidak, HubSensi adalah aplikasi berbasis web yang dapat diakses melalui browser. Tidak diperlukan instalasi khusus, kecuali akses internet.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+        .plan-btn {
+            background-color: #F0F0F0;
+            border: 1px solid var(--border-color);
+            color: var(--text-dark);
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
 
-<!-- Contact Section -->
-<section class="py-5">
-    <div class="container py-5">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold mb-3">Hubungi Kami</h2>
-            <p class="lead text-muted">Butuh bantuan atau informasi lebih lanjut?</p>
-        </div>
+        .plan-btn:hover {
+            background-color: var(--primary-green);
+            color: #fff;
+            border-color: var(--primary-green);
+        }
+
+        .plan.highlight .plan-btn {
+            background-color: var(--secondary-green);
+            color: #fff;
+            border-color: var(--secondary-green);
+        }
+
+        /* FAQ Section */
+        .faq-item {
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 0;
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+        }
         
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="text-center mb-4">
-                            <i class="bi bi-envelope text-primary fs-1"></i>
-                            <h4 class="mt-2">Email Support</h4>
-                            <p class="text-muted">support@hubsensi.com</p>
-                        </div>
-                        
-                        <div class="text-center mb-4">
-                            <i class="bi bi-telephone text-primary fs-1"></i>
-                            <h4 class="mt-2">Telepon</h4>
-                            <p class="text-muted">(021) 1234-5678</p>
-                        </div>
-                        
-                        <div class="text-center">
-                            <i class="bi bi-clock text-primary fs-1"></i>
-                            <h4 class="mt-2">Jam Operasional</h4>
-                            <p class="text-muted">Senin - Jumat: 08:00 - 17:00 WIB</p>
-                        </div>
-                    </div>
+        .faq-question::after {
+            content: '▼';
+            font-size: 12px;
+            transition: transform 0.3s ease;
+            color: var(--secondary-green);
+            font-weight: bold;
+        }
+
+        .faq-item.active .faq-question::after {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+            color: var(--text-light);
+            padding-top: 0;
+            line-height: 1.7;
+        }
+        
+        .faq-item.active .faq-answer {
+            padding-top: 15px;
+        }
+
+
+        /* Footer */
+        footer {
+            background-color: #00281D;
+            color: #A0B5AF;
+            padding: 40px 0;
+            text-align: center;
+        }
+        
+        .footer-content {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <img src={{ url_for('static', filename='img/logo.png') }} alt="Hubsensi Logo">
                 </div>
-            </div>
+                <button class="login-btn" onclick="window.location.href='{{ url_for('auth.login')}}'">Login</button>
+            </nav>
         </div>
-    </div>
-</section>
+    </header>
 
-<!-- Footer CTA -->
-<section class="bg-primary text-white py-4">
-    <div class="container">
-        <div class="d-md-flex justify-content-between align-items-center">
-            <h4 class="mb-3 mb-md-0">Siap untuk mengubah cara mengelola absensi sekolah?</h4>
-            {% if not current_user.is_authenticated %}
-            <a href="{{ url_for('auth.login') }}" class="btn btn-light">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Login Sekarang
-            </a>
-            {% else %}
-            <a href="
-                {% if current_user.role.value == 'superadmin' %}
-                    {{ url_for('superadmin.dashboard') }}
-                {% elif current_user.role.value == 'admin' %}
-                    {{ url_for('admin.dashboard') }}
-                {% elif current_user.role.value == 'teacher' %}
-                    {{ url_for('teacher.dashboard') }}
-                {% elif current_user.role.value == 'student' %}
-                    {{ url_for('student.dashboard') }}
-                {% endif %}" 
-               class="btn btn-light">
-                <i class="bi bi-speedometer2 me-2"></i>Ke Dashboard
-            </a>
-            {% endif %}
-        </div>
-    </div>
-</section>
-
-<style>
-    .hero-section {
-        background: linear-gradient(135deg, var(--primary-color) 0%, #0a58ca 100%);
-    }
     
-    .feature-icon {
-        transition: transform 0.3s ease;
-    }
-    
-    .card:hover .feature-icon {
-        transform: scale(1.1);
-    }
-    
-    .accordion-button:not(.collapsed) {
-        background-color: rgba(var(--primary-color-rgb), 0.1);
-        color: var(--primary-color);
-        font-weight: 600;
-    }
-</style>
-{% endblock %}
+    <section class="hero">
+        <h1>
+            Transformasi Digital untuk Sekolah
+            <span>Aman, Praktis, Terintegrasi</span>
+        </h1>
+        <p>Ayo coba sekarang juga!</p>
+
+        <button class="hero-btn">Coba Gratis</button>
+    </section>
+
+    <div class="content-wrapper">
+
+        <section class="container" id="absensi">
+    <h2>Absensi Menjadi Lebih Mudah</h2>
+    <div class="attendance">
+        <div class="attendance-text left">
+            <ul>
+                <li>Laporan Real-Time</li>
+                <li>Terintegrasi dengan sistem lain</li>
+                <li>Sistem Notifikasi Orang Tua</li>
+            </ul>
+        </div>
+
+        <div class="attendance-img">
+            <img src="{{ url_for('static', filename='img/phones.png') }}" alt="Aplikasi Absensi di Ponsel">
+        </div>
+
+        <div class="attendance-text right">
+            <ul>
+                <li>Absensi QR Code</li>
+                <li>Rekap Absensi Otomatis</li>
+                <li>Multi Sekolah & Multi Divisi</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+        <section class="container" id="cara-kerja">
+            <h2>Cara Kerja</h2>
+            <p class="section-subtitle">Hanya dengan beberapa langkah mudah, sekolah Anda siap bertransformasi</p>
+            <div class="how-it-works">
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-icon">
+                            <img src="{{ url_for('static', filename='img/icon-chart.svg') }}" alt="Ikon Analisis">
+                        </div>
+                        <h3>1. Atur Jadwal & Divisi</h3>
+                        <p>Atur jadwal masuk, jam pelajaran, dan divisi atau kelas yang berlaku di sekolah Anda.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">
+                            <img src="{{ url_for('static', filename='img/icon-calendar.svg') }}"  alt="Ikon Kalender">
+                        </div>
+                        <h3>2. Daftarkan Pengguna</h3>
+                        <p>Daftarkan seluruh siswa, guru, dan staf. Atur peran dan kelas masing-masing pengguna.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">
+                            <img src="{{ url_for('static', filename='img/icon-sync.svg') }}"  alt="Ikon Sinkronisasi">
+                        </div>
+                        <h3>3. Siap Digunakan</h3>
+                        <p>Sekolah Anda siap menjalankan absensi digital. Pantau kehadiran secara real-time.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="container" id="layanan">
+            <h2>Paket Layanan</h2>
+            <p class="section-subtitle">Pilih paket yang paling sesuai dengan kebutuhan dan skala sekolah Anda.</p>
+            <div class="pricing-plans">
+                <div class="plan">
+                    <h3>Paket Basic</h3>
+                    <p class="price">Rp. 280.000</p>
+                    <ul>
+                        <li>Fitur A</li>
+                        <li>Fitur B</li>
+                        <li>Fitur C</li>
+                    </ul>
+                    <button class="plan-btn">Pilih Paket</button>
+                </div>
+                <div class="plan highlight">
+                    <div class="plan-badge">Paling Hemat</div>
+                    <h3>Paket Viola</h3>
+                    <p class="price">Rp. 450.000</p>
+                    <ul>
+                       <li>Semua di Paket Basic</li>
+                       <li>Fitur D Premium</li>
+                       <li>Fitur E Premium</li>
+                       <li>Dukungan Prioritas</li>
+                    </ul>
+                    <button class="plan-btn">Pilih Paket</button>
+                </div>
+                <div class="plan">
+                    <h3>Paket Premium</h3>
+                    <p class="price">Rp. 890.000</p>
+                    <ul>
+                        <li>Semua di Paket Viola</li>
+                        <li>Fitur F Eksklusif</li>
+                        <li>Analitik Lanjutan</li>
+                    </ul>
+                    <button class="plan-btn">Pilih Paket</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="container" id="faq">
+            <h2>Pertanyaan Umum</h2>
+            <p class="section-subtitle">Temukan jawaban dari pertanyaan yang sering diajukan kepada kami.</p>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <div class="faq-question">Bagaimana cara mendaftar sekolah saya?</div>
+                    <div class="faq-answer">
+                        <p>Anda dapat mendaftar dengan menekan tombol "Coba Gratis" di bagian atas halaman ini, kemudian ikuti langkah-langkah yang diberikan. Tim kami akan segera menghubungi Anda untuk proses verifikasi dan setup awal.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Apakah data sekolah saya akan aman?</div>
+                    <div class="faq-answer">
+                        <p>Tentu. Kami menggunakan enkripsi standar industri dan server yang aman untuk memastikan semua data sekolah Anda, termasuk data siswa dan guru, tersimpan dengan aman dan rahasia.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Bagaimana cara kerja Absensi QR Code?</div>
+                    <div class="faq-answer">
+                        <p>Sistem akan menghasilkan QR Code unik setiap harinya yang dapat ditampilkan di area sekolah. Siswa dan guru hanya perlu memindai kode tersebut menggunakan aplikasi Hubsensi di ponsel mereka untuk mencatat kehadiran.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Apakah bisa custom fitur khusus?</div>
+                    <div class="faq-answer">
+                        <p>Ya, kami menyediakan opsi kustomisasi untuk Paket Premium atau melalui perjanjian khusus. Silakan hubungi tim penjualan kami untuk mendiskusikan kebutuhan spesifik sekolah Anda.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <footer>
+            <div class="container footer-content">
+                <p>Hubungi Kami | Syarat & Ketentuan | Kebijakan Privasi</p>
+                <p>&copy; 2025 Hubsensi. Semua Hak Cipta Dilindungi.</p>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        // JavaScript untuk Animasi Scroll dan FAQ
+
+        // 1. Animasi Fade-in saat elemen masuk ke viewport
+        const sections = document.querySelectorAll('section');
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+
+        // 2. Fungsi Accordion untuk FAQ
+        const faqItems = document.querySelectorAll('.faq-item');
+
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            const answer = item.querySelector('.faq-answer');
+
+            question.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                
+                // Tutup semua item lain dulu agar hanya satu yang terbuka
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== item) {
+                        otherItem.classList.remove('active');
+                        otherItem.querySelector('.faq-answer').style.maxHeight = '0px';
+                    }
+                });
+
+                // Toggle item yang diklik
+                if (!isActive) {
+                    item.classList.add('active');
+                    answer.style.maxHeight = answer.scrollHeight + 'px';
+                } else {
+                    item.classList.remove('active');
+                    answer.style.maxHeight = '0px';
+                }
+            });
+        });
+        
+    </script>
+</body>
+</html>
