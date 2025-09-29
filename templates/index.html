@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* CSS Reset & Basic Setup */
         :root {
@@ -93,7 +94,7 @@
         /* --- ANIMASI BARU UNTUK HERO SECTION --- */
         .hero {
             text-align: center;
-            padding: 140px 0;
+            padding: 160px 0;
             color: var(--bg-light);
         }
         
@@ -152,6 +153,7 @@
             font-family: 'Poppins', sans-serif;
             cursor: pointer;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
             /* Animasi Fade In, muncul setelah typing selesai */
             opacity: 0; /* Sembunyikan di awal */
             animation: fadeInUp 0.8s ease-out 0.5s forwards;
@@ -316,7 +318,7 @@
             border-radius: 15px;
             padding: 30px;
             text-align: center;
-            width: 320px;
+            width: 500px;
             transition: all 0.3s ease;
         }
 
@@ -394,6 +396,7 @@
             font-weight: 600;
             font-family: 'Poppins', sans-serif;
             transition: all 0.3s ease;
+            text-decoration: none;
         }
 
         .plan-btn:hover {
@@ -408,6 +411,30 @@
             border-color: var(--secondary-green);
         }
 
+        .plan-btn-prime {
+            background-color: var(--secondary-green);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .plan-btn-prime:hover {
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+
+        .plan.highlight .plan-btn-prime {
+            background-color: var(--secondary-green);
+            color: #fff;
+            border-color: var(--secondary-green);
+        }
         /* FAQ Section */
         .faq-item {
             border-bottom: 1px solid var(--border-color);
@@ -483,7 +510,7 @@
         </h1>
         <p>Ayo coba sekarang juga!</p>
 
-        <button class="hero-btn">Coba Gratis</button>
+        <a href="https://wa.me/62895636188250" class="hero-btn">Coba Gratis</a>
     </section>
 
     <div class="content-wrapper">
@@ -545,39 +572,42 @@
 
         <section class="container" id="layanan">
             <h2>Paket Layanan</h2>
-            <p class="section-subtitle">Pilih paket yang paling sesuai dengan kebutuhan dan skala sekolah Anda.</p>
+            <p class="section-subtitle">Pilih paket yang paling sesuai dengan kebutuhan dan skala sekolah Anda. 
+                Harga yang tercantum adalah harga dasar (dapat berubah sesuai S&K)
+            </p>
             <div class="pricing-plans">
                 <div class="plan">
-                    <h3>Paket Basic</h3>
+                    <h3>Paket Bulanan</h3>
                     <p class="price">Rp. 280.000</p>
                     <ul>
-                        <li>Fitur A</li>
-                        <li>Fitur B</li>
-                        <li>Fitur C</li>
+                        <li>Akses Fitur Penuh.</li>
+                        <li>Update Otomatis & Gratis.</li>
+                        <li>Dukungan Via WhatsApp & E-Mail.</li>
+                        <li>Bisa Dibatalkan Kapan Saja</li>
                     </ul>
-                    <button class="plan-btn">Pilih Paket</button>
+                    <a href="https://wa.me/62895636188250" class="plan-btn">Pilih Paket</a>
                 </div>
                 <div class="plan highlight">
                     <div class="plan-badge">Paling Hemat</div>
-                    <h3>Paket Viola</h3>
-                    <p class="price">Rp. 450.000</p>
+                    <h3>Paket Tahunan</h3>
+                    <p class="price">Rp. 2.700.000</p>
                     <ul>
-                       <li>Semua di Paket Basic</li>
-                       <li>Fitur D Premium</li>
-                       <li>Fitur E Premium</li>
-                       <li>Dukungan Prioritas</li>
+                       <li>Semua Fitur Di Paket Bulanan.</li>
+                       <li>Akses Penuh Selama 1 Tahun.</li>
+                       <li>Hemat Hingga 20% Dibanding Bulanan.</li>
+                       <li>Dukungan Prioritas.</li>
                     </ul>
-                    <button class="plan-btn">Pilih Paket</button>
+                    <a href="https://wa.me/62895636188250"class="plan-btn-prime">Pilih Paket</a>
                 </div>
                 <div class="plan">
-                    <h3>Paket Premium</h3>
-                    <p class="price">Rp. 890.000</p>
+                    <h3>Paket 3 Bulan</h3>
+                    <p class="price">Rp. 750.000</p>
                     <ul>
-                        <li>Semua di Paket Viola</li>
-                        <li>Fitur F Eksklusif</li>
-                        <li>Analitik Lanjutan</li>
+                        <li>Semua Fitur Di Paket Bulanan.</li>
+                        <li>Akses Penuh Selama 90 Hari.</li>
+                        <li>Hemat Hingga 10%</li>
                     </ul>
-                    <button class="plan-btn">Pilih Paket</button>
+                    <a href="https://wa.me/62895636188250" class="plan-btn">Pilih Paket</a>
                 </div>
             </div>
         </section>
@@ -589,7 +619,7 @@
                 <div class="faq-item">
                     <div class="faq-question">Bagaimana cara mendaftar sekolah saya?</div>
                     <div class="faq-answer">
-                        <p>Anda dapat mendaftar dengan menekan tombol "Coba Gratis" di bagian atas halaman ini, kemudian ikuti langkah-langkah yang diberikan. Tim kami akan segera menghubungi Anda untuk proses verifikasi dan setup awal.</p>
+                        <p>Anda dapat mendaftar dengan menekan tombol "Coba Gratis" di bagian atas halaman ini, kemudian silahkan hubungi tim kami. Tim kami akan segera menghubungi Anda untuk proses verifikasi dan setup awal.</p>
                     </div>
                 </div>
                 <div class="faq-item">
@@ -605,17 +635,25 @@
                     </div>
                 </div>
                 <div class="faq-item">
-                    <div class="faq-question">Apakah bisa custom fitur khusus?</div>
+                    <div class="faq-question">Apakah bisa request integrasi khusus?</div>
                     <div class="faq-answer">
-                        <p>Ya, kami menyediakan opsi kustomisasi untuk Paket Premium atau melalui perjanjian khusus. Silakan hubungi tim penjualan kami untuk mendiskusikan kebutuhan spesifik sekolah Anda.</p>
+                        <p>Ya, kami menyediakan opsi kustomisasi melalui perjanjian khusus. Silakan hubungi tim penjualan kami untuk mendiskusikan kebutuhan spesifik sekolah Anda.</p>
                     </div>
                 </div>
             </div>
         </section>
         
         <footer>
-            <div class="container footer-content">
-                <p>Hubungi Kami | Syarat & Ketentuan | Kebijakan Privasi</p>
+            <div class="container footer-content" style="text-align:center; padding:20px;">
+                <a href="https://wa.me/62895636188250" target="_blank" style="margin:0 15px; color:#FFFFFF; font-size:28px;">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="mailto:682022021@student.uksw.edu" style="margin:0 15px; color:#FFFFFF; font-size:28px;">
+                    <i class="fas fa-envelope"></i>
+                </a>
+                <a href="tel:+62895636188250" style="margin:0 15px; color:#FFFFFF; font-size:28px;">
+                    <i class="fas fa-phone"></i>
+                </a>
                 <p>&copy; 2025 Hubsensi. Semua Hak Cipta Dilindungi.</p>
             </div>
         </footer>
