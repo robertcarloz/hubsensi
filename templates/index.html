@@ -198,7 +198,7 @@
 }
 
 .attendance-img {
-    flex: 0 0 600px;
+    flex: 0 0 800px;
     text-align: center;
 }
 
@@ -210,7 +210,7 @@
 }
 
 .attendance-img:hover img {
-    transform: scale(1.05) translateY(-5px);
+    transform: scale(1.15) translateY(-2px);
 }
 
 .attendance-text {
@@ -487,12 +487,365 @@
         .footer-content {
             font-size: 14px;
         }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 15px;
+        }
+
+        .attendance-text .features-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .feature-item {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-item.active {
+            border-color: #3498db;
+            background-color: #e8f4fc;
+        }
+        
+        .feature-icon {
+            font-size: 8px;
+            margin-bottom: 10px;
+            color: #3498db;
+        }
+        
+        .infographic-container {
+            background-color: white;
+            border-radius: 45px;
+            padding: 30px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        .infographic-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .infographic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 15px;
+        }
+        
+        .infographic-title {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+        
+        .student-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .info-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .info-card h3 {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .info-card p {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .achievement-section {
+            margin-top: 30px;
+        }
+        
+        .section-title {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .achievement-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .achievement-icon {
+            background-color: #3498db;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 20px;
+        }
+        
+        .achievement-content h4 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .achievement-content p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .description {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #e8f4fc;
+            border-radius: 10px;
+            color: #2c3e50;
+        }
+        
+        /* Styling untuk bagian absensi */
+        .attendance {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .attendance-text {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+        }
+        
+        .attendance-text ul {
+            list-style-type: none;
+        }
+        
+        .attendance-text li {
+            padding: 10px 0;
+            border-bottom: 1px solid #ecf0f1;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .attendance-text li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        
+        .attendance-img {
+            flex: 1;
+            text-align: left;
+            min-width: 250px;
+            padding: 15px;
+        }
+        
+        .attendance-img img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 992px) {
+            .features-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .student-info, .achievement-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .attendance {
+                flex-direction: column;
+            }
+            
+            .attendance-text.left {
+                order: 1;
+            }
+            
+            .attendance-img {
+                order: 2;
+            }
+            
+            .attendance-text.right {
+                order: 3;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .infographic-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        .attendance-image {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.infographic-container {
+    position: relative; /* BUKAN absolute */
+    margin-top: 40px;  /* jarak antara gambar dan infografis */
+    width: 180%;
+    max-width: 1500px;  /* biar gak melebar */
+    text-align: center;
+    
+}
+
+.attendance {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.attendance-img {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.attendance-img img {
+    width: 110%;       /* gambar jadi lebih besar */
+    height: auto;
+    border-radius: 0;  /* hilangkan sudut membulat */
+    box-shadow: none;  /* hilangkan efek kotak */
+    max-width: none;
+}
+
+/* Biar kotak dan teks lebih ke pinggir */
+.features-grid,
+.attendance,
+.attendance-text,
+.attendance-img {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+.feature-item {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    gap: 8px;
+}
+
+.features-grid {
+    gap: 10px;  /* dari 15px → jadi lebih rapat */
+}
+
+.feature-item {
+    width: 75%;        /* bisa disesuaikan: 90%, 80%, 75% */
+    margin: auto;      /* biar tetap rata tengah */
+}
+
+.attendance {
+    gap: 30px;
+}
+
+.attendance-text {
+    margin-left: 15px;
+}
+
+/* Tambah jarak antara gambar dan teks kanan */
+.attendance {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 50px !important;   /* bisa diganti 30px/40px */
+}
+
+/* Antisipasi jika gap tidak bekerja */
+.attendance-text.right {
+    margin-left: 40px !important;
+}
+
+.attendance-img {
+    margin-right: 40px !important;
+}
+
+.container {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 1100px;
+    margin-bottom: 10rem   /* atau sesuai desain */
+}
+
+.container-head{
+    margin: 0 auto;
+    width: 100%;
+    max-width: 1100px;
+    margin-bottom: 2rem
+}
+
+.infographic-header {
+    width: 100%;
+    text-align: center; /* biar aman langsung ke parent */
+}
+.infographic-title {
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+
     </style>
 </head>
 <body>
 
     <header>
-        <div class="container">
+        <div class="container-head">
             <nav>
                 <div class="logo">
                     <img src={{ url_for('static', filename='img/logo.png') }} alt="Hubsensi Logo">
@@ -517,25 +870,113 @@
 
         <section class="container" id="absensi">
     <h2>Absensi Menjadi Lebih Mudah</h2>
-    <div class="attendance">
-        <div class="attendance-text left">
-            <ul>
-                <li>Laporan Real-Time</li>
-                <li>Terintegrasi dengan sistem lain</li>
-                <li>Sistem Notifikasi Orang Tua</li>
-            </ul>
-        </div>
-
-        <div class="attendance-img">
-            <img src="{{ url_for('static', filename='img/phones.png') }}" alt="Aplikasi Absensi di Ponsel">
-        </div>
-
-        <div class="attendance-text right">
-            <ul>
-                <li>Absensi QR Code</li>
-                <li>Rekap Absensi Otomatis</li>
-                <li>Multi Sekolah & Multi Divisi</li>
-            </ul>
+    <div class="content-wrapper">
+        <div class="attendance">
+            <div class="attendance-text left">
+                <div class="features-grid">
+                    <div class="feature-item" data-target="Laporan Real-Time">
+                        <div>Laporan Real-Time</div>
+                    </div>
+                    <div class="feature-item" data-target="Kelola Akunmu">
+                        <div>Kelola Akun dengan Lebih Fleksibel</div>
+                    </div>
+                    <div class="feature-item" data-target="Auto Generate">
+                        <div>Auto Generate Kartu Siswa</div>
+                    </div>
+                </div>
+            </div>
+            <div class="attendance-img">
+                <img src="{{ url_for('static', filename='img/phones.png') }}" alt="Aplikasi Absensi di Ponsel">
+                <div id="Laporan Real-Time" class="infographic-container">
+                    <div class="infographic-header">
+                        <h2 class="infographic-title">Laporan Real-Time</h2>
+                    </div>
+                    <div class="feature-content">
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <p>Pantau data absensi secara langsung, kapan saja dan di mana saja. 
+                                    Setiap kehadiran atau ketidakhadiran tercatat secara instan.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="Kelola Akunmu" class="infographic-container">
+                    <div class="infographic-header">
+                        <h2 class="infographic-title">Kelola Akun dengan Lebih Fleksibel</h2>
+                    </div>
+                    <div class="feature-content">
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <p>Dengan username dan password yang bisa diubah kapanpun, kamu punya kendali penuh atas keamanan datamu.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="Auto Generate" class="infographic-container">
+                    <div class="infographic-header">
+                        <h2 class="infographic-title">Auto Generate Kartu Siswa</h2>
+                    </div>
+                    <div class="feature-content">
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <p>Dengan fitur Auto Generate Kartu Siswa, Anda bisa membuat ribuan kartu dalam hitungan menit, 
+                                    lengkap dengan Nama, NIS, dan QR code unik, secara otomatis. Efisien, cepat, dan akurat, siap cetak kapan saja</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="Absensi QR Code" class="infographic-container">
+                    <div class="infographic-header">
+                        <h2 class="infographic-title">Absensi QR Code</h2>
+                    </div>
+                    <div class="feature-content">
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <p>Proses absensi menjadi lebih cepat, valid, dan transparan dengan absensi melalui QR code.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="Rekap Absensi" class="infographic-container">
+                    <div class="infographic-header">
+                        <h2 class="infographic-title">Rekap Absensi Otomatis</h2>
+                    </div>
+                    <div class="feature-content">
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <p>Fokus pada hal yang lebih penting, biarkan sistem yang merekap semua data untuk Anda.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="Multi Sekolah" class="infographic-container">
+                    <div class="infographic-header">
+                        <h2 class="infographic-title">Sistem untuk Multi Sekolah                                                            </h2>
+                    </div>
+                    <div class="feature-content">
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <p>Sistem kami dirancang khusus untuk Multi Sekolah, memungkinkan Anda mengelola data absensi, 
+                                    laporan, dan administrasi dari seluruh cabang dalam satu platform terpusat. Kelola semua sekolah 
+                                    dalam satu genggaman, efisien dan tanpa batas..</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="attendance-text right">
+                <div class="features-grid">
+                    <div class="feature-item" data-target="Absensi QR Code">
+                        <div>Absensi QR Code</div>
+                    </div>
+                    <div class="feature-item" data-target="Rekap Absensi">
+                        <div>Rekap Absensi Otomatis</div>
+                    </div>
+                    <div class="feature-item" data-target="Multi Sekolah">
+                        <div>Sistem untuk Multi Sekolah</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -714,6 +1155,37 @@
             });
         });
         
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const featureItems = document.querySelectorAll('.feature-item');
+            const infographicContainers = document.querySelectorAll('.infographic-container');
+            
+            featureItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Hapus kelas aktif dari semua item
+                    featureItems.forEach(i => i.classList.remove('active'));
+                    
+                    // Tambah kelas aktif ke item yang diklik
+                    this.classList.add('active');
+                    
+                    // Sembunyikan semua infografis
+                    infographicContainers.forEach(container => {
+                        container.classList.remove('active');
+                    });
+                    
+                    // Tampilkan infografis yang sesuai
+                    const targetId = this.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+                    
+                    if (targetElement) {
+                        targetElement.classList.add('active');
+                    } else {
+                        document.getElementById('placeholder').classList.add('active');
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>
