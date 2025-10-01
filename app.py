@@ -145,7 +145,11 @@ def create_app(config_class=Config):
 
 # Create app instance
 app = create_app()
-
+with app.app_context():
+    print("=== ROUTES TERDAFTAR ===")
+    for rule in app.url_map.iter_rules():
+        print(rule.endpoint, rule.rule)
+    print("========================")
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(

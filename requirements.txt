@@ -25,4 +25,4 @@ sendgrid
 scikit-learn
 pandas
 openpyxl
-
+requests==2.31.0

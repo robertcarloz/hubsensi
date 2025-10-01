@@ -16,6 +16,9 @@ from . import admin_bp
 from .forms import TeacherForm, StudentForm, ClassroomForm, EventForm, SchoolSettingsForm
 import pandas as pd
 from utils.s3_helper import *
+from utils.card_generator import generate_student_card
+from flask import send_file
+import io
 
 def require_admin(f):
     @wraps(f)
@@ -107,6 +110,28 @@ def dashboard():
                            recent_activities=recent_activities,
                            recent_teachers=recent_teachers,
                            recent_students=recent_students)
+
+@admin_bp.route('/students/<int:student_id>/generate-card')
+@require_admin
+def generate_card(student_id):
+
+    student = Student.query.get_or_404(student_id)
+    if not student.qr_code:
+        flash('Siswa ini belum memiliki QR code. Silakan buat terlebih dahulu.', 'warning')
+        return redirect(url_for('admin.students'))
+
+    card_image = generate_student_card(student.full_name, student.nis, student.qr_code)
+
+    if card_image is None:
+        flash('Gagal mengambil gambar QR code dari S3.', 'danger')
+        return redirect(url_for('admin.students'))
+
+    return send_file(
+        io.BytesIO(card_image),
+        mimetype='image/png',
+        as_attachment=True,
+        download_name=f'kartu_{student.full_name}.png'
+    )
 
 @admin_bp.route('/teachers')
 @require_admin
