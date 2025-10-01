@@ -57,8 +57,8 @@ def generate_student_card(student_name, nis, qr_code):
             qr_img = Image.open(io.BytesIO(response.content)).resize((700, 700))
             qr_img_grayscale = qr_img.convert('L')
             inverted_qr_mask = ImageOps.invert(qr_img_grayscale)
-            white_color = 255
-            template.paste(white_color, (290, 1100), mask=inverted_qr_mask)
+            black = 0
+            template.paste(black, (290, 1100), mask=inverted_qr_mask)
         except requests.exceptions.RequestException as e:
             print(f"Error fetching QR code from S3: {e}")
             pass
